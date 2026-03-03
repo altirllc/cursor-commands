@@ -1,6 +1,6 @@
-# Cursor Workflow — React + TypeScript
+# Cursor Workflow
 
-A structured, reusable prompt system for building and fixing production React + TypeScript apps with Cursor AI. Every workflow enforces a plan-before-code discipline that eliminates hallucination, scope creep, and silent regressions.
+A structured, reusable prompt system for building and fixing production apps with Cursor AI. Every workflow enforces a plan-before-code discipline that eliminates hallucination, scope creep, and silent regressions.
 
 ---
 
