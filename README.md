@@ -36,6 +36,7 @@ Use when something that worked is now broken.
 | 2    | `2-design-fix.md`     | AI designs the minimal surgical fix. No code written.             |
 | 3    | `3-implement-fix.md`  | AI implements exactly the approved fix. Nothing more.             |
 | 4    | `4-review-pr.md`      | AI reviews the diff critically before merge.                      |
+                                 Make sure to run this pr command on new cursor instance.          |
 | 5    | `5-test-checklist.md` | AI generates a manual browser test checklist.                     |
 
 ---
@@ -51,6 +52,7 @@ Use for small features, UI changes, or functional improvements (1–5 files affe
 | 2B   | `2B-mimic-design.md`   | _(Alternative to 2A)_ AI designs the UI by replicating an existing component. |
 | 3    | `3-implement.md`       | AI implements with production-grade rules.                                    |
 | 4    | `4-review-pr.md`       | AI reviews the diff critically before merge.                                  |
+                                  Make sure to run this pr command on new cursor instance.                      |
 | 5    | `5-test-checklist.md`  | AI generates a manual browser test checklist.                                 |
 
 Use **2A** when there's no obvious existing UI to copy. Use **2B** when you know exactly which existing component the new UI should look like.
@@ -69,6 +71,7 @@ Use for large features that touch many files or require multiple PRs (6+ files a
 | 3B   | `3B-mimic-ui.md`       | _(Alternative to 3A)_ AI designs by replicating an existing pattern.                             |
 | 4    | `4-implement.md`       | AI implements with a mandatory pre-flight confirmation before touching code.                     |
 | 5    | `5-review-pr.md`       | AI reviews the diff with full architecture and regression scrutiny.                              |
+                                  Make sure to run this pr command on new cursor instance.                                         |
 | 6    | `6-test-checklist.md`  | AI generates a structured test checklist with 4 sections.                                        |
 
 > **Important:** Step 2 ends with a **Human Decision Required** section. You must write down your decisions on PR strategy, implementation order, and ambiguity answers before proceeding to Step 3.
