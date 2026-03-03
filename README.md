@@ -21,6 +21,8 @@ A structured, reusable prompt system for building and fixing production apps wit
 2. Add relevant command `.md` files from this repo to your commands directory
 3. When you need a specific command, commands will automatically appear in the chat when you type `/`. Check the command. Identify what it needs as input. Fill in every `User will provide {…}` placeholder with your actual content and put it inside Cursor chat along with the command.
 4. Follow the commands in order.
+As example, when you run the commands, it will ask you for the required inputs from you:
+<img width="761" height="347" alt="Screenshot 2026-03-03 at 4 08 20 PM" src="https://github.com/user-attachments/assets/78500be6-8420-47fb-9ae8-82aebeaee0b3" />
 
 ---
 
