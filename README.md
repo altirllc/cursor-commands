@@ -17,9 +17,9 @@ A structured, reusable prompt system for building and fixing production apps wit
 
 ## How to Use
 
-1. Create a .cursor/commands directory in your project root
-2. Add relevant commands .md files from this repo to your repo commands directory.
-3. When you need a specific command, commands will automatically appear in the chat when you type /. Check the command. Identify what it needs as input. Fill in every `User will provide {…}` placeholder with your actual content and put it inside cursor chat along with command.
+1. Create a `.cursor/commands` directory in your project root
+2. Add relevant command `.md` files from this repo to your commands directory
+3. When you need a specific command, commands will automatically appear in the chat when you type `/`. Check the command. Identify what it needs as input. Fill in every `User will provide {…}` placeholder with your actual content and put it inside Cursor chat along with the command.
 4. Follow the commands in order.
 
 ---
@@ -30,14 +30,15 @@ A structured, reusable prompt system for building and fixing production apps wit
 
 Use when something that worked is now broken.
 
-| Step | File                  | What Happens                                                      |
-| ---- | --------------------- | ----------------------------------------------------------------- |
-| 1    | `1-investigate.md`    | AI reads the codebase and traces the root cause. No code written. |
-| 2    | `2-design-fix.md`     | AI designs the minimal surgical fix. No code written.             |
-| 3    | `3-implement-fix.md`  | AI implements exactly the approved fix. Nothing more.             |
-| 4    | `4-review-pr.md`      | AI reviews the diff critically before merge.                      |
-                                 Make sure to run this pr command on new cursor instance.          |
-| 5    | `5-test-checklist.md` | AI generates a manual browser test checklist.                     |
+| Step | File | What Happens |
+| ---- | ---- | ------------ |
+| 1 | `1-investigate.md` | AI reads the codebase and traces the root cause. No code written. |
+| 2 | `2-design-fix.md` | AI designs the minimal surgical fix. No code written. |
+| 3 | `3-implement-fix.md` | AI implements exactly the approved fix. Nothing more. |
+| 4 | `4-review-pr.md` | AI reviews the diff critically before merge. |
+| 5 | `5-test-checklist.md` | AI generates a manual browser test checklist. |
+
+> ⚠️ Run `4-review-pr.md` in a **fresh Cursor instance** to avoid context bias.
 
 ---
 
@@ -45,15 +46,16 @@ Use when something that worked is now broken.
 
 Use for small features, UI changes, or functional improvements (1–5 files affected).
 
-| Step | File                   | What Happens                                                                  |
-| ---- | ---------------------- | ----------------------------------------------------------------------------- |
-| 1    | `1-feature-clarity.md` | AI surfaces every ambiguity. You answer all questions.                        |
-| 2A   | `2A-design-ui.md`      | AI designs the UI from existing codebase patterns.                            |
-| 2B   | `2B-mimic-design.md`   | _(Alternative to 2A)_ AI designs the UI by replicating an existing component. |
-| 3    | `3-implement.md`       | AI implements with production-grade rules.                                    |
-| 4    | `4-review-pr.md`       | AI reviews the diff critically before merge.                                  |
-                                  Make sure to run this pr command on new cursor instance.                      |
-| 5    | `5-test-checklist.md`  | AI generates a manual browser test checklist.                                 |
+| Step | File | What Happens |
+| ---- | ---- | ------------ |
+| 1 | `1-feature-clarity.md` | AI surfaces every ambiguity. You answer all questions. |
+| 2A | `2A-design-ui.md` | AI designs the UI from existing codebase patterns. |
+| 2B | `2B-mimic-design.md` | *(Alternative to 2A)* AI designs the UI by replicating an existing component. |
+| 3 | `3-implement.md` | AI implements with production-grade rules. |
+| 4 | `4-review-pr.md` | AI reviews the diff critically before merge. |
+| 5 | `5-test-checklist.md` | AI generates a manual browser test checklist. |
+
+> ⚠️ Run `4-review-pr.md` in a **fresh Cursor instance** to avoid context bias.
 
 Use **2A** when there's no obvious existing UI to copy. Use **2B** when you know exactly which existing component the new UI should look like.
 
@@ -63,16 +65,17 @@ Use **2A** when there's no obvious existing UI to copy. Use **2B** when you know
 
 Use for large features that touch many files or require multiple PRs (6+ files affected).
 
-| Step | File                   | What Happens                                                                                     |
-| ---- | ---------------------- | ------------------------------------------------------------------------------------------------ |
-| 1    | `1-feature-clarity.md` | AI surfaces every ambiguity and hidden assumption.                                               |
-| 2    | `2-feature-plan.md`    | AI analyses risk, proposes PR split, and implementation order. **You make the final decisions.** |
-| 3A   | `3A-design-ui.md`      | AI designs the full UI from existing codebase patterns.                                          |
-| 3B   | `3B-mimic-ui.md`       | _(Alternative to 3A)_ AI designs by replicating an existing pattern.                             |
-| 4    | `4-implement.md`       | AI implements with a mandatory pre-flight confirmation before touching code.                     |
-| 5    | `5-review-pr.md`       | AI reviews the diff with full architecture and regression scrutiny.                              |
-                                  Make sure to run this pr command on new cursor instance.                                         |
-| 6    | `6-test-checklist.md`  | AI generates a structured test checklist with 4 sections.                                        |
+| Step | File | What Happens |
+| ---- | ---- | ------------ |
+| 1 | `1-feature-clarity.md` | AI surfaces every ambiguity and hidden assumption. |
+| 2 | `2-feature-plan.md` | AI analyses risk, proposes PR split, and implementation order. **You make the final decisions.** |
+| 3A | `3A-design-ui.md` | AI designs the full UI from existing codebase patterns. |
+| 3B | `3B-mimic-ui.md` | *(Alternative to 3A)* AI designs by replicating an existing pattern. |
+| 4 | `4-implement.md` | AI implements with a mandatory pre-flight confirmation before touching code. |
+| 5 | `5-review-pr.md` | AI reviews the diff with full architecture and regression scrutiny. |
+| 6 | `6-test-checklist.md` | AI generates a structured test checklist with 4 sections. |
+
+> ⚠️ Run `5-review-pr.md` in a **fresh Cursor instance** to avoid context bias.
 
 > **Important:** Step 2 ends with a **Human Decision Required** section. You must write down your decisions on PR strategy, implementation order, and ambiguity answers before proceeding to Step 3.
 
@@ -81,10 +84,10 @@ Use for large features that touch many files or require multiple PRs (6+ files a
 ## Key Principles Enforced in Every Prompt
 
 **Anti-Hallucination**
-Every prompt that requires codebase knowledge tells the AI: _"Do not describe code you haven't read. List every file you opened. Label any assumption as [ASSUMPTION — unverified]."_
+Every prompt that requires codebase knowledge tells the AI: *"Do not describe code you haven't read. List every file you opened. Label any assumption as [ASSUMPTION — unverified]."*
 
 **Stop Conditions**
-Every implementation and investigation prompt has an explicit stop condition: _"If you reach a point where you would need to assume something — stop and tell me."_
+Every implementation and investigation prompt has an explicit stop condition: *"If you reach a point where you would need to assume something — stop and tell me."*
 
 **Pre-Flight Before Code**
 Every implementation prompt requires the AI to list all files it will create or modify, and wait for your explicit go-ahead before writing a single line.
