@@ -17,26 +17,10 @@ A structured, reusable prompt system for building and fixing production apps wit
 
 ## How to Use
 
-1. Place the `.cursor/commands/` folder in the root of your project
-2. When you need a workflow, open the relevant `.md` file in Cursor chat or composer
-3. Fill in every `User will provide {…}` placeholder with your actual content
-4. Follow the steps in order — do not skip steps
-
-### The `User will provide {…}` Convention
-
-Any field marked `User will provide {description}` is a placeholder **you** fill in before sending the prompt to Cursor. Example:
-
-```
-**BUG DESCRIPTION:**
-User will provide {exact description of what the user sees}
-```
-
-You replace this with:
-
-```
-**BUG DESCRIPTION:**
-Clicking Save on the Edit Profile form shows a success toast but the data is not saved to the database.
-```
+1. Create a .cursor/commands directory in your project root
+2. Add relevant commands .md files from this repo to your repo commands directory.
+3. When you need a specific command, commands will automatically appear in the chat when you type /. Check the command. Identify what it needs as input. Fill in every `User will provide {…}` placeholder with your actual content and put it inside cursor chat along with command.
+4. Follow the commands in order.
 
 ---
 
