@@ -41,6 +41,7 @@ Use when something that worked is now broken.
 | 5 | `5-test-checklist.md` | AI generates a manual browser test checklist. |
 
 > ⚠️ Run `4-review-pr.md` in a **fresh Cursor instance** to avoid context bias.
+> You can run same commands again and again to ensure highest quality and confidence in model output. E.g prompt 1-investigate again and again to ensure confidence in the root cause.
 
 ---
 
@@ -58,6 +59,7 @@ Use for small features, UI changes, or functional improvements (1–5 files affe
 | 5 | `5-test-checklist.md` | AI generates a manual browser test checklist. |
 
 > ⚠️ Run `4-review-pr.md` in a **fresh Cursor instance** to avoid context bias.
+> You can run same commands again and again to ensure highest quality and confidence in model output. E.g prompt 1-feature-clarity again and again to ensure confidence for the feature clarity and edge cases or doubt resolving.
 
 Use **2A** when there's no obvious existing UI to copy. Use **2B** when you know exactly which existing component the new UI should look like.
 
