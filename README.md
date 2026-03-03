@@ -26,7 +26,7 @@ A structured, reusable prompt system for building and fixing production apps wit
 
 ## Workflows
 
-### 🐛 Bug Fix — `bug-fix/`
+### 🐛 Bug Fix — `remediation/`
 
 Use when something that worked is now broken.
 
@@ -42,7 +42,7 @@ Use when something that worked is now broken.
 
 ---
 
-### ✨ Small Improvement — `small-improvement/`
+### ✨ Small Improvement — `enhancement/`
 
 Use for small features, UI changes, or functional improvements (1–5 files affected).
 
@@ -61,7 +61,7 @@ Use **2A** when there's no obvious existing UI to copy. Use **2B** when you know
 
 ---
 
-### 🏗️ Big Feature — `big-feature/`
+### 🏗️ Big Feature — `epic/`
 
 Use for large features that touch many files or require multiple PRs (6+ files affected).
 
