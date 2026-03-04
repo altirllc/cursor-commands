@@ -9,10 +9,10 @@ You are a senior staff React + TypeScript engineer. This production app will be 
 ---
 
 **TASK:**
-User will provide {paste the complete feature description with all clarified requirements from Step 1}
+User will provide {paste the complete feature description with all clarified requirements from previous step}
 
 **APPROVED PLAN:**
-User will provide {paste the approved component design from Step 3}
+User will provide {paste the approved plan from previous step}
 
 **THIS PR COVERS:**
 User will provide {specify exactly which chunk this PR implements — and what is explicitly out of scope for this PR}

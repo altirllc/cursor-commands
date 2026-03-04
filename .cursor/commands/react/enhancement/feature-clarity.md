@@ -17,6 +17,13 @@ Do not write any code. Do not suggest any implementation. Do not assume anything
 
 This is your **one chance to ask all questions**. Do not ask in multiple rounds — surface everything now. I will respond to everything before we move to the next step.
 
+After surfacing questions, classify this task:
+
+Enhancement — touches 1–4 files, no shared utilities modified, no new TypeScript contracts needed → use /implement directly after clarity
+Feature — touches 5+ files, modifies shared code, or requires new TypeScript contracts → requires /feature-plan before /implement
+
+State the classification and your reasoning at the end of your output.
+
 ---
 
 ## What to Surface
