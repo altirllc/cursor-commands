@@ -1,3 +1,8 @@
+---
+name: bug-implement
+description: Third phase of bug-fix pipeline. Implements the fix per approved plan. Use after bug-plan.
+---
+
 # BUG FIX IMPLEMENT AGENT
 
 ## STACK: React + TypeScript

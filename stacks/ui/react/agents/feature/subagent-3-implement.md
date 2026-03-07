@@ -1,3 +1,8 @@
+---
+name: feature-implement
+description: Third phase of feature pipeline. Implements code changes per the approved plan. Use after feature-plan.
+---
+
 # FEATURE IMPLEMENT AGENT
 
 ## STACK: React + TypeScript

@@ -1,3 +1,8 @@
+---
+name: bug-test-checklist
+description: Final phase of bug-fix pipeline. Produces manual test checklist for QA. Use after implementation and review loop.
+---
+
 # BUG FIX TEST CHECKLIST AGENT
 
 ## STACK: React + TypeScript

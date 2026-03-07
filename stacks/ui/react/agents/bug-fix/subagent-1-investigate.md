@@ -1,3 +1,8 @@
+---
+name: bug-investigate
+description: First phase of bug-fix pipeline. Traces execution path, finds root cause with evidence. Use at start of bug-fix workflow.
+---
+
 # BUG INVESTIGATION AGENT
 
 ## STACK: React + TypeScript

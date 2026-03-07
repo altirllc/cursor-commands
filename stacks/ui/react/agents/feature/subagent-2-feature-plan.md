@@ -1,3 +1,8 @@
+---
+name: feature-plan
+description: Second phase of feature pipeline. Creates implementation plan with chunks, file changes, and test contracts. Use after feature-clarity.
+---
+
 # FEATURE PLAN AGENT
 
 ## STACK: React + TypeScript

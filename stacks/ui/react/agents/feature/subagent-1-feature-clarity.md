@@ -1,3 +1,8 @@
+---
+name: feature-clarity
+description: First phase of feature pipeline. Resolves ambiguities, investigates codebase, produces clear spec. Use at start of feature workflow.
+---
+
 # FEATURE CLARITY AGENT
 
 ## STACK: React + TypeScript

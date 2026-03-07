@@ -1,3 +1,8 @@
+---
+name: pr-review
+description: Reviews git diff for regressions, security issues, and blockers. Runs with fresh context (diff + task only). Use after test-executor passes.
+---
+
 # PR REVIEW AGENT
 
 ## STACK: React + TypeScript

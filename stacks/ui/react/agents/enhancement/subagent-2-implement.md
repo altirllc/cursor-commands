@@ -1,3 +1,8 @@
+---
+name: enhancement-implement
+description: Second phase of enhancement pipeline. Implements small changes (1-4 files). Use after enhancement-clarity.
+---
+
 # ENHANCEMENT IMPLEMENT AGENT
 
 ## STACK: React + TypeScript

@@ -1,3 +1,8 @@
+---
+name: enhancement-clarity
+description: First phase of enhancement pipeline. Resolves ambiguities, checks scope (1-4 files). Use at start of enhancement workflow.
+---
+
 # ENHANCEMENT CLARITY AGENT
 
 ## STACK: React + TypeScript

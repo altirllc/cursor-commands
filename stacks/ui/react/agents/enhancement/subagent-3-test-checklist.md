@@ -1,3 +1,8 @@
+---
+name: enhancement-test-checklist
+description: Final phase of enhancement pipeline. Produces manual test checklist for QA. Use after implementation and review loop.
+---
+
 # ENHANCEMENT TEST CHECKLIST AGENT
 
 ## STACK: React + TypeScript

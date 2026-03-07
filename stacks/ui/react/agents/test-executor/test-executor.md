@@ -1,3 +1,8 @@
+---
+name: test-executor
+description: Runs test suite, classifies failures, fixes test bugs. Use after implementation phase in any workflow.
+---
+
 # TEST EXECUTOR AGENT
 
 ## STACK: React + TypeScript

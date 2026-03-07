@@ -1,3 +1,8 @@
+---
+name: feature-test-checklist
+description: Final phase of feature pipeline. Produces manual test checklist for QA. Use after implementation and review loop.
+---
+
 # FEATURE TEST CHECKLIST AGENT
 
 ## STACK: React + TypeScript

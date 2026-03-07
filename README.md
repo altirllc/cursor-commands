@@ -76,9 +76,22 @@ Each pipeline shares:
 
 ### With Cursor
 
-1. Copy `stacks/ui/react/agents/` to `.cursor/commands/react/`
-2. Commands appear when you type `/` in Cursor chat
-3. Run agents manually in sequence following the workflow
+Uses **Cursor subagents** for true context isolation (each phase runs in its own context window).
+
+1. Copy agents to your project:
+   ```
+   cp -r stacks/ui/react/agents/ .cursor/agents/
+   cp -r stacks/ui/react/_shared/ .cursor/agents/_shared/
+   cp stacks/ui/react/orchestrator/cursor-orchestrator.md .cursor/agents/orchestrator.md
+   ```
+
+2. Run a task:
+   ```
+   /orchestrator
+   Task: [your task description]
+   ```
+
+See `tools/cursor.md` for full setup instructions.
 
 ---
 
@@ -118,7 +131,8 @@ All workflows include the **self-healing review loop**: Test → Review → Bloc
             │   ├── react-conventions.md
             │   └── memory.md
             ├── orchestrator/
-            │   └── orchestrator.md    # Master state machine
+            │   ├── orchestrator.md        # Claude Code orchestrator (inline execution)
+            │   └── cursor-orchestrator.md # Cursor orchestrator (subagent delegation)
             ├── workflows/
             │   ├── feature.md         # 9-phase feature pipeline
             │   ├── bug-fix.md         # 9-phase bug-fix pipeline
@@ -170,6 +184,9 @@ Only BLOCKER-classified findings trigger the loop. Warnings, suggestions, and te
 
 ### Fresh Context Principle
 The Blocker Resolver and PR Review agents never see the original implementation reasoning. They receive only the diff, the spec, and the blocker list. Fresh eyes catch more bugs.
+
+- **Cursor**: Real isolation — each subagent runs in its own context window
+- **Claude Code**: Simulated — agent is instructed to ignore prior reasoning
 
 ### Classification Gates
 - Enhancement agents check if scope exceeds 4 files → auto-reclassify to Feature

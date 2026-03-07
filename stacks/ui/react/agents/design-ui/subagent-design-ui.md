@@ -1,3 +1,8 @@
+---
+name: design-ui
+description: Designs UI components with variety and creativity. Use when building new UI that needs design decisions. Requires ui-scan output.
+---
+
 # UI VARIETY DESIGNER
 
 ## STACK: React + TypeScript

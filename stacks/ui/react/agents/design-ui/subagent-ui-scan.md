@@ -1,3 +1,8 @@
+---
+name: ui-scan
+description: One-time codebase scan for UI patterns, components, and design tokens. Run once per project or when UI codebase changes significantly.
+---
+
 # UI CODEBASE INTELLIGENCE SCAN
 
 ## STACK: React + TypeScript

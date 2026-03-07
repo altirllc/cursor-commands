@@ -1,3 +1,8 @@
+---
+name: blocker-resolver
+description: Fixes blockers identified by pr-review or test failures. Runs with fresh context (diff + blockers only). Use when blockers are found.
+---
+
 # BLOCKER RESOLVER AGENT
 
 ## STACK: React + TypeScript

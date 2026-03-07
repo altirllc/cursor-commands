@@ -1,3 +1,8 @@
+---
+name: bug-plan
+description: Second phase of bug-fix pipeline. Designs minimal fix based on investigation. Use after bug-investigate.
+---
+
 # BUG FIX PLAN AGENT
 
 ## STACK: React + TypeScript

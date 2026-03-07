@@ -1,3 +1,8 @@
+---
+name: pr-description
+description: Generates GitHub PR title and body from all handoffs. Use as final step before git push and PR creation.
+---
+
 # PR DESCRIPTION WRITER
 
 ## STACK: React + TypeScript

@@ -41,7 +41,15 @@ If `type` is `auto`, classify based on the description:
 
 ## Phase 1 — Setup
 
-1. Create a feature branch: `agent/{{TASK_TYPE}}-{{TASK_ID}}-{{SHORT_SLUG}}`
+1. Create a worktree with a new branch:
+   ```bash
+   BRANCH_NAME="agent/{{TASK_TYPE}}-{{TASK_ID}}-{{SHORT_SLUG}}"
+   WORKTREE_PATH=".worktrees/{{TASK_ID}}"
+   git worktree add "$WORKTREE_PATH" -b "$BRANCH_NAME"
+   cd "$WORKTREE_PATH"
+   ```
+   All subsequent work happens inside this worktree. The main working directory stays clean.
+
 2. Read `rules/react-conventions.md` and `rules/memory.md`
 3. Build the context packet from the template in `_shared/context-packet.md`
 4. Route to the correct workflow
@@ -135,7 +143,7 @@ After the review loop exits:
 2. Run **PR Description Agent** → produces structured PR body
 3. Collect all DECISION_POINTs from all phases
 4. Collect all UNRESOLVED_BLOCKERs from all phases
-5. Git operations:
+5. Git operations (from inside the worktree):
    ```bash
    git add -A
    git commit -m "{{COMMIT_TYPE}}: {{DESCRIPTION}}"
@@ -143,6 +151,12 @@ After the review loop exits:
    gh pr create --title "{{PR_TITLE}}" --body "{{PR_BODY}}"
    ```
 6. Output the PR URL
+7. Cleanup worktree:
+   ```bash
+   cd {{ORIGINAL_CWD}}
+   git worktree remove "{{WORKTREE_PATH}}" --force
+   ```
+   The branch remains on the remote; only the local worktree is removed.
 
 ---
 
@@ -157,6 +171,7 @@ TASK COMPLETE: {{TASK_ID}}
 
 PR: {{PR_URL}}
 Branch: {{BRANCH_NAME}}
+Worktree: {{WORKTREE_PATH}} (cleaned up)
 Type: {{TASK_TYPE}}
 
 Pipeline:
@@ -194,21 +209,27 @@ If the orchestrator itself encounters an error:
 
 ## Parallel Execution (Multiple Tasks)
 
+Every task runs in its own worktree by default (see Phase 1). This enables parallel execution without conflicts.
+
 When running multiple tasks simultaneously:
 
-- Each task runs in its own git worktree: `.claude/worktrees/{{TASK_ID}}/`
+- Each task runs in its own git worktree: `.worktrees/{{TASK_ID}}/`
 - Each task has its own branch, state, and agent chain
 - No cross-talk between tasks
 - Conflict resolution happens at PR merge time on GitHub (same as real dev teams)
 
-To run N tasks in parallel:
+To run N tasks in parallel, start N orchestrator instances (e.g., N terminals or N `claude` processes):
 ```
-For each task in tasks:
-  1. Create worktree
-  2. Run full pipeline in worktree
-  3. Create PR from worktree
-  4. Clean up worktree
+# Terminal 1
+claude "Run orchestrator: task-1 description"
+
+# Terminal 2
+claude "Run orchestrator: task-2 description"
+
+# ...each creates its own worktree and runs independently
 ```
+
+Each instance follows the same flow: create worktree → run pipeline → create PR → cleanup worktree.
 
 ---
 
@@ -234,6 +255,8 @@ For resumability, maintain a state file per task:
   "taskId": "{{TASK_ID}}",
   "type": "{{TASK_TYPE}}",
   "branch": "{{BRANCH_NAME}}",
+  "worktreePath": "{{WORKTREE_PATH}}",
+  "originalCwd": "{{ORIGINAL_CWD}}",
   "currentPhase": "{{PHASE_NAME}}",
   "loopCount": 0,
   "maxLoops": 5,
@@ -250,4 +273,4 @@ For resumability, maintain a state file per task:
 }
 ```
 
-If interrupted, resume from the last incomplete phase.
+If interrupted, resume from the last incomplete phase. On resume, `cd` into `worktreePath` before continuing.
