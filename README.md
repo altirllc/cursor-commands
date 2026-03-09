@@ -47,6 +47,7 @@ Task Description + Clarification Answers
 ```
 
 Each pipeline shares:
+
 - **Test Executor** — runs tests, classifies failures, auto-fixes test issues
 - **PR Review** — fresh-context regression analysis with blocker classification
 - **Blocker Resolver** — minimal fixes with fresh context (no original reasoning)
@@ -59,12 +60,14 @@ Each pipeline shares:
 ### With Claude Code
 
 1. Copy the repo into your project:
+
    ```
    cp -r stacks/ui/react/ .claude/agents/
    cp -r shared/ .claude/agents/_shared_global/
    ```
 
 2. Point your `CLAUDE.md` to the orchestrator:
+
    ```
    See tools/claude-code.md for full setup instructions
    ```
@@ -78,17 +81,23 @@ Each pipeline shares:
 
 Uses **Cursor subagents** for true context isolation (each phase runs in its own context window).
 
-1. Copy agents to your project:
+1. Copy to your project:
+
    ```
-   cp -r stacks/ui/react/agents/ .cursor/agents/
-   cp -r stacks/ui/react/_shared/ .cursor/agents/_shared/
-   cp stacks/ui/react/orchestrator/cursor-orchestrator.md .cursor/agents/orchestrator.md
+   mkdir -p .cursor/agents .cursor/commands .cursor/rules
+   cp -r stacks/ui/react/agents/* .cursor/agents/
+   cp stacks/ui/react/orchestrator/cursor-orchestrator.md .cursor/commands/orchestrator.md
+   cp -r stacks/ui/react/rules/* .cursor/rules/
    ```
 
-2. Run a task:
+2. Run a task: Type `/orchestrator` and paste your task:
+
    ```
    /orchestrator
-   Task: [your task description]
+
+   Task:
+   - Type: bug-fix
+   - Description: [your task]
    ```
 
 See `tools/cursor.md` for full setup instructions.
@@ -99,9 +108,9 @@ See `tools/cursor.md` for full setup instructions.
 
 | Task Type       | When to Use                            | Pipeline                                                          |
 | --------------- | -------------------------------------- | ----------------------------------------------------------------- |
-| **Feature**     | Large feature, 5+ files, new contracts | Clarity → Plan → Implement → Test → Review → PR                  |
-| **Bug Fix**     | Something that worked is now broken    | Investigate → Plan → Implement → Test → Review → PR              |
-| **Enhancement** | Small improvement, 1-4 files           | Clarity → Implement → Test → Review → PR                         |
+| **Feature**     | Large feature, 5+ files, new contracts | Clarity → Plan → Implement → Test → Review → PR                   |
+| **Bug Fix**     | Something that worked is now broken    | Investigate → Plan → Implement → Test → Review → PR               |
+| **Enhancement** | Small improvement, 1-4 files           | Clarity → Implement → Test → Review → PR                          |
 | **Design UI**   | New UI that needs design decisions     | UI Scan (once) → Design UI (per feature, feeds into any pipeline) |
 
 All workflows include the **self-healing review loop**: Test → Review → Blocker Resolve, up to 5 iterations.
@@ -122,22 +131,22 @@ All workflows include the **self-healing review loop**: Test → Review → Bloc
     └── ui/
         └── react/
             ├── README.md              # React stack documentation
-            ├── _shared/               # Foundation (referenced by all agents)
-            │   ├── autonomous-protocol.md
-            │   ├── context-packet.md
-            │   ├── handoff-format.md
-            │   └── quality-gate.md
             ├── rules/                 # Project-specific (user customizes)
             │   ├── react-conventions.md
             │   └── memory.md
             ├── orchestrator/
             │   ├── orchestrator.md        # Claude Code orchestrator (inline execution)
-            │   └── cursor-orchestrator.md # Cursor orchestrator (subagent delegation)
-            ├── workflows/
-            │   ├── feature.md         # 9-phase feature pipeline
-            │   ├── bug-fix.md         # 9-phase bug-fix pipeline
-            │   └── enhancement.md     # 8-phase enhancement pipeline
+            │   └── cursor-orchestrator.md # Cursor command (→ .cursor/commands/)
             └── agents/
+                ├── _shared/           # Foundation (referenced by all agents)
+                │   ├── autonomous-protocol.md
+                │   ├── context-packet.md
+                │   ├── handoff-format.md
+                │   └── quality-gate.md
+                ├── workflows/
+                │   ├── feature.md     # 9-phase feature pipeline
+                │   ├── bug-fix.md     # 9-phase bug-fix pipeline
+                │   └── enhancement.md # 8-phase enhancement pipeline
                 ├── feature/
                 │   ├── subagent-1-feature-clarity.md
                 │   ├── subagent-2-feature-plan.md
@@ -170,35 +179,42 @@ All workflows include the **self-healing review loop**: Test → Review → Bloc
 ## Key Concepts
 
 ### Autonomous Operation
+
 Every agent runs without human intervention. Ambiguities are resolved by: (1) checking clarification answers, (2) reading the codebase, (3) making the safer engineering judgment and documenting it as a `DECISION_POINT`.
 
 ### Structured Handoffs
+
 Agents communicate via machine-readable handoff blocks with delimited sections (STATUS, SUMMARY, FILES_READ, etc.). This enables reliable orchestration and audit trails.
 
 ### Self-Healing Review Loop
+
 ```
 Implement → Test Executor → PR Review → Blocker Resolver → Test Executor → ...
                                                               (max 5 loops)
 ```
+
 Only BLOCKER-classified findings trigger the loop. Warnings, suggestions, and tech debt are noted but don't block.
 
 ### Fresh Context Principle
+
 The Blocker Resolver and PR Review agents never see the original implementation reasoning. They receive only the diff, the spec, and the blocker list. Fresh eyes catch more bugs.
 
 - **Cursor**: Real isolation — each subagent runs in its own context window
 - **Claude Code**: Simulated — agent is instructed to ignore prior reasoning
 
 ### Classification Gates
+
 - Enhancement agents check if scope exceeds 4 files → auto-reclassify to Feature
 - Bug fix investigation checks confidence → falls back to hypothesis-based approach
 
 ### Blocker Classification
-| Level        | Triggers Fix Loop? | Examples                                    |
-| ------------ | ------------------ | ------------------------------------------- |
-| BLOCKER      | Yes                | Logic errors, runtime crashes, type breaks  |
-| WARNING      | No                 | Missing loading states, perf concerns, a11y |
-| SUGGESTION   | No                 | Naming preferences, code organization       |
-| TECH_DEBT    | No                 | Issues too large for this PR                |
+
+| Level      | Triggers Fix Loop? | Examples                                    |
+| ---------- | ------------------ | ------------------------------------------- |
+| BLOCKER    | Yes                | Logic errors, runtime crashes, type breaks  |
+| WARNING    | No                 | Missing loading states, perf concerns, a11y |
+| SUGGESTION | No                 | Naming preferences, code organization       |
+| TECH_DEBT  | No                 | Issues too large for this PR                |
 
 ---
 
@@ -227,6 +243,7 @@ See `stacks/ui/react/orchestrator/orchestrator.md` for full state machine detail
 ## Portability
 
 Copy the entire structure into any project. Customize:
+
 - `rules/react-conventions.md` — your project's coding standards
 - `rules/memory.md` — project-specific landmines and patterns
 - Context packet fields — project name, conventions path, memory path
