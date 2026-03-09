@@ -20,31 +20,43 @@ This architecture uses **Cursor subagents** for true context isolation. Each pha
 # Clone this repo
 git clone https://github.com/your-org/cursor-commands.git /tmp/cursor-commands
 
-# Copy the agent architecture into your project
-cp -r /tmp/cursor-commands/stacks/ui/react/_shared/ your-project/.cursor/agents/_shared/
-cp -r /tmp/cursor-commands/stacks/ui/react/agents/ your-project/.cursor/agents/
-cp -r /tmp/cursor-commands/stacks/ui/react/workflows/ your-project/.cursor/agents/workflows/
-cp -r /tmp/cursor-commands/stacks/ui/react/orchestrator/cursor-orchestrator.md your-project/.cursor/agents/orchestrator.md
-cp -r /tmp/cursor-commands/stacks/ui/react/rules/ your-project/.cursor/rules/
+# Create .cursor structure in your project
+cd your-project
+mkdir -p .cursor/agents .cursor/commands .cursor/rules
+
+# Copy agents folder (includes _shared, workflows, feature, bug-fix, etc.)
+cp -r /tmp/cursor-commands/stacks/ui/react/agents/* .cursor/agents/
+
+# Copy orchestrator to commands folder (invoke with /orchestrator)
+cp /tmp/cursor-commands/stacks/ui/react/orchestrator/cursor-orchestrator.md .cursor/commands/orchestrator.md
+
+# Copy rules
+cp -r /tmp/cursor-commands/stacks/ui/react/rules/* .cursor/rules/
 
 # Edit project-specific files
-# your-project/.cursor/rules/react-conventions.md  — fill with YOUR project's conventions
-# your-project/.cursor/rules/memory.md             — fill as you discover project-specific landmines
+# .cursor/rules/react-conventions.md  — fill with YOUR project's conventions
+# .cursor/rules/memory.md             — fill as you discover project-specific landmines
 ```
 
 ---
 
 ## Project Structure After Setup
 
+This matches the structure you create in your codebase:
+
 ```
 your-project/
 ├── .cursor/
-│   ├── agents/                        # Cursor subagent directory
+│   ├── agents/
 │   │   ├── _shared/
 │   │   │   ├── autonomous-protocol.md
 │   │   │   ├── context-packet.md
 │   │   │   ├── handoff-format.md
 │   │   │   └── quality-gate.md
+│   │   ├── workflows/
+│   │   │   ├── feature.md
+│   │   │   ├── enhancement.md
+│   │   │   └── bug-fix.md
 │   │   ├── feature/
 │   │   │   ├── subagent-1-feature-clarity.md
 │   │   │   ├── subagent-2-feature-plan.md
@@ -68,16 +80,13 @@ your-project/
 │   │   │   └── pr-description.md
 │   │   ├── blocker-resolver/
 │   │   │   └── blocker-resolver.md
-│   │   ├── test-executor/
-│   │   │   └── test-executor.md
-│   │   ├── workflows/
-│   │   │   ├── feature.md
-│   │   │   ├── enhancement.md
-│   │   │   └── bug-fix.md
-│   │   └── orchestrator.md            # Master orchestrator (delegates to subagents)
-│   └── rules/
-│       ├── react-conventions.md       ← per-project
-│       └── memory.md                  ← per-project
+│   │   └── test-executor/
+│   │       └── test-executor.md
+│   ├── commands/
+│   │   └── orchestrator.md           # Invoke with /orchestrator, then paste your task
+│   ├── rules/
+│   │   ├── react-conventions.md      ← per-project
+│   │   └── memory.md                 ← per-project
 ├── src/
 └── ...
 ```
@@ -89,7 +98,7 @@ your-project/
 ```
 # Open Cursor in your project
 # Start a new chat (Cmd+L or Ctrl+L)
-# Invoke the orchestrator:
+# Type /orchestrator and paste your task:
 
 /orchestrator
 
@@ -102,6 +111,7 @@ Task:
 ```
 
 The orchestrator will:
+
 1. Create a worktree with a new branch
 2. Delegate to subagents in sequence (`/bug-investigate` → `/bug-plan` → `/bug-implement` → etc.)
 3. Run the self-healing review loop (test → review → fix blockers)
@@ -127,34 +137,35 @@ Analyze this feature request and produce a clarity handoff.
 ```
 
 Each subagent:
+
 - Runs in its own context window (isolated)
 - Returns a structured handoff block
 - The orchestrator parses the handoff and passes it to the next subagent
 
 ---
 
-## Available Subagents
+## Available Commands and Subagents
 
-| Subagent | Description |
-|----------|-------------|
-| `/orchestrator` | Master orchestrator — delegates to other subagents |
-| `/feature-clarity` | Resolves ambiguities for features |
-| `/feature-plan` | Creates implementation plan |
-| `/feature-implement` | Implements code changes |
-| `/feature-test-checklist` | Produces manual test checklist |
-| `/bug-investigate` | Traces root cause of bugs |
-| `/bug-plan` | Designs minimal fix |
-| `/bug-implement` | Implements bug fix |
-| `/bug-test-checklist` | Produces manual test checklist |
-| `/enhancement-clarity` | Resolves ambiguities for small changes |
-| `/enhancement-implement` | Implements small changes |
-| `/enhancement-test-checklist` | Produces manual test checklist |
-| `/test-executor` | Runs tests, classifies failures |
-| `/pr-review` | Reviews diff for regressions (fresh context) |
-| `/blocker-resolver` | Fixes blockers (fresh context) |
-| `/pr-description` | Generates PR title and body |
-| `/ui-scan` | One-time UI codebase scan |
-| `/design-ui` | Designs UI components |
+| Name                          | Type     | Description                                                                         |
+| ----------------------------- | -------- | ----------------------------------------------------------------------------------- |
+| `/orchestrator`               | Command  | Master orchestrator — runs full pipeline. Type `/orchestrator` and paste your task. |
+| `/feature-clarity`            | Subagent | Resolves ambiguities for features                                                   |
+| `/feature-plan`               | Subagent | Creates implementation plan                                                         |
+| `/feature-implement`          | Subagent | Implements code changes                                                             |
+| `/feature-test-checklist`     | Subagent | Produces manual test checklist                                                      |
+| `/bug-investigate`            | Subagent | Traces root cause of bugs                                                           |
+| `/bug-plan`                   | Subagent | Designs minimal fix                                                                 |
+| `/bug-implement`              | Subagent | Implements bug fix                                                                  |
+| `/bug-test-checklist`         | Subagent | Produces manual test checklist                                                      |
+| `/enhancement-clarity`        | Subagent | Resolves ambiguities for small changes                                              |
+| `/enhancement-implement`      | Subagent | Implements small changes                                                            |
+| `/enhancement-test-checklist` | Subagent | Produces manual test checklist                                                      |
+| `/test-executor`              | Subagent | Runs tests, classifies failures                                                     |
+| `/pr-review`                  | Subagent | Reviews diff for regressions (fresh context)                                        |
+| `/blocker-resolver`           | Subagent | Fixes blockers (fresh context)                                                      |
+| `/pr-description`             | Subagent | Generates PR title and body                                                         |
+| `/ui-scan`                    | Subagent | One-time UI codebase scan                                                           |
+| `/design-ui`                  | Subagent | Designs UI components                                                               |
 
 ---
 
@@ -183,11 +194,13 @@ cursor
 The key advantage of Cursor subagents is **real context isolation**.
 
 When the orchestrator invokes `/pr-review` or `/blocker-resolver`, it passes ONLY:
+
 - The git diff
 - The original task description
 - The blocker list (for blocker-resolver)
 
 The subagent never sees:
+
 - Implementation reasoning
 - Clarity handoffs
 - Plan details
@@ -198,32 +211,36 @@ This is genuine fresh-context review, not simulated.
 
 ## Comparison: Cursor vs Claude Code
 
-| Aspect | Cursor (subagents) | Claude Code (inline) |
-|--------|-------------------|---------------------|
-| Context isolation | Real — each subagent has own context | Simulated — same context throughout |
-| Fresh review | Genuine — subagent never saw prior phases | Simulated — agent told to ignore prior |
-| Parallel execution | Supported | Not supported |
-| File location | `.cursor/agents/` | `.claude/agents/` |
-| Orchestrator | Delegates via `/subagent-name` | Reads and executes inline |
+| Aspect             | Cursor (subagents)                                               | Claude Code (inline)                   |
+| ------------------ | ---------------------------------------------------------------- | -------------------------------------- |
+| Context isolation  | Real — each subagent has own context                             | Simulated — same context throughout    |
+| Fresh review       | Genuine — subagent never saw prior phases                        | Simulated — agent told to ignore prior |
+| Parallel execution | Supported                                                        | Not supported                          |
+| File location      | `.cursor/agents/`                                                | `.claude/agents/`                      |
+| Orchestrator       | `.cursor/commands/orchestrator.md` — invoke with `/orchestrator` | Reads and executes inline              |
 
 ---
 
 ## Troubleshooting
 
 **Subagent not found?**
+
 - Ensure the file is in `.cursor/agents/` with valid YAML frontmatter
 - Check that `name` in frontmatter matches the `/name` you're invoking
 
 **Orchestrator stops and asks questions?**
+
 - Add clarification answers to your task description
 - The orchestrator follows the autonomous protocol — it should make decisions and document them as DECISION_POINT
 
 **PR has UNRESOLVED_BLOCKERS?**
+
 - The review loop exhausted its 5 iterations
 - Check the blockers in the PR description
 - Fix manually or re-run with more specific clarification answers
 
 **Git operations fail?**
+
 - Ensure `gh` CLI is installed and authenticated (`gh auth login`)
 - Check that you have push access to the repository
 
@@ -241,8 +258,7 @@ When you want to improve an agent:
 # sync-agents.sh
 rsync -av /path/to/cursor-commands/stacks/ui/react/agents/ your-project/.cursor/agents/ \
   --exclude='*.DS_Store'
-rsync -av /path/to/cursor-commands/stacks/ui/react/_shared/ your-project/.cursor/agents/_shared/
-rsync -av /path/to/cursor-commands/stacks/ui/react/orchestrator/cursor-orchestrator.md your-project/.cursor/agents/orchestrator.md
+cp /path/to/cursor-commands/stacks/ui/react/orchestrator/cursor-orchestrator.md your-project/.cursor/commands/orchestrator.md
 ```
 
 The `rules/` directory is excluded because it contains project-specific configuration.

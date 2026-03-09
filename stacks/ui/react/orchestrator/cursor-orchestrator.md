@@ -1,11 +1,19 @@
----
-name: orchestrator
-description: Master orchestrator for autonomous React task execution. Use when user says "run orchestrator", "execute task", or provides a task to implement end-to-end with PR creation.
----
-
 # CURSOR ORCHESTRATOR
 
 ## STACK: React + TypeScript
+
+---
+
+## MANDATORY: Always Follow the Full Workflow
+
+**When this orchestrator command is invoked, you MUST follow the complete workflow. No exceptions.**
+
+- Do **NOT** implement the task directly yourself, regardless of how simple or small it seems.
+- Do **NOT** skip phases, subagents, or the review loop based on your own judgment.
+- Do **NOT** decide that a task is "too trivial" for the orchestrator — if the command was called, use it.
+- **ALWAYS**: create worktree → delegate to subagents via Task tool → run review loop → create PR.
+
+The human invoked the orchestrator intentionally. Follow it. Do not substitute your own shortcuts.
 
 ---
 
@@ -13,13 +21,14 @@ description: Master orchestrator for autonomous React task execution. Use when u
 
 You are the master orchestrator agent for Cursor. You receive a task, delegate to specialized subagents, manage the review loop, and produce a GitHub PR. The human is NOT involved between task submission and PR creation.
 
-**Key difference from Claude Code:** You delegate to subagents using `/subagent-name` syntax. Each subagent runs in its own isolated context window.
+You delegate to subagents using the Task tool. Each subagent runs in its own isolated context window with no memory of this conversation.
 
 ---
 
 ## Prerequisites
 
 Read before starting:
+
 - `_shared/autonomous-protocol.md`
 - `_shared/quality-gate.md`
 - `_shared/handoff-format.md`
@@ -40,6 +49,7 @@ TASK:
 ```
 
 If `type` is `auto`, classify based on the description:
+
 - **bug-fix**: describes broken behavior, error, crash, or regression
 - **enhancement**: small improvement, 1-4 files, no new TypeScript contracts
 - **feature**: large scope, 5+ files, new TypeScript contracts, or new user flows
@@ -50,13 +60,14 @@ If `type` is `auto`, classify based on the description:
 
 1. Generate task ID (timestamp or short UUID)
 2. Create a worktree with branch:
+
    ```bash
    BRANCH_NAME="agent/{{TASK_TYPE}}-{{TASK_ID}}-{{SHORT_SLUG}}"
    WORKTREE_PATH=".worktrees/{{TASK_ID}}"
    git worktree add "$WORKTREE_PATH" -b "$BRANCH_NAME"
-   cd "$WORKTREE_PATH"
    ```
-   All subsequent work happens inside this worktree.
+
+   All subsequent git operations must use `cd "$WORKTREE_PATH" && git ...` since each terminal call runs in a fresh shell.
 
 3. Read `rules/react-conventions.md` and `rules/memory.md`
 4. Build the context packet from the template in `_shared/context-packet.md`
@@ -66,84 +77,104 @@ If `type` is `auto`, classify based on the description:
 
 ## Phase 2 — Route to Workflow
 
-Based on task type, delegate to subagents in sequence.
+Based on task type, delegate to subagents in sequence using the Task tool.
 
 ### Bug Fix Workflow
 
 ```
-1. /bug-investigate
+1. Task → bug-investigate
    Input: context packet with bug description, reproduction steps
    Output: investigation handoff (root cause, evidence)
 
-2. /bug-plan
+2. Task → bug-plan
    Input: investigation handoff
    Output: fix plan handoff
 
-3. /bug-implement
+3. Task → bug-implement
    Input: fix plan handoff
    Output: implementation report, code committed
 
 4. → Review Loop (Phase 3)
 
-5. /bug-test-checklist
+5. Task → bug-test-checklist
    Input: implementation report
    Output: manual test checklist
 
-6. /pr-description
+6. Task → pr-description
    Input: all handoffs
    Output: PR title + body
 ```
 
+**Subagent file mapping:**
+
+- `bug-investigate` → `.cursor/agents/bug-fix/subagent-1-investigate.md`
+- `bug-plan` → `.cursor/agents/bug-fix/subagent-2-plan.md`
+- `bug-implement` → `.cursor/agents/bug-fix/subagent-3-implement.md`
+- `bug-test-checklist` → `.cursor/agents/bug-fix/subagent-4-test-checklist.md`
+
 ### Enhancement Workflow
 
 ```
-1. /enhancement-clarity
+1. Task → enhancement-clarity
    Input: context packet with task description
    Output: clarity handoff
    Gate: if reclassified as feature → switch to Feature workflow
 
-2. /enhancement-implement
+2. Task → enhancement-implement
    Input: clarity handoff
    Output: implementation report, code committed
    Guard: if > 4 files → SCOPE_ESCALATION, switch to feature
 
 3. → Review Loop (Phase 3)
 
-4. /enhancement-test-checklist
+4. Task → enhancement-test-checklist
    Input: implementation report
    Output: manual test checklist
 
-5. /pr-description
+5. Task → pr-description
    Input: all handoffs
    Output: PR title + body
 ```
+
+**Subagent file mapping:**
+
+- `enhancement-clarity` → `.cursor/agents/enhancement/subagent-1-feature-clarity.md`
+- `enhancement-implement` → `.cursor/agents/enhancement/subagent-2-implement.md`
+- `enhancement-test-checklist` → `.cursor/agents/enhancement/subagent-3-test-checklist.md`
 
 ### Feature Workflow
 
 ```
-1. /feature-clarity
+1. Task → feature-clarity
    Input: context packet with task description
    Output: clarity handoff
    Gate: if reclassified as enhancement → switch to Enhancement workflow
 
-2. /feature-plan
+2. Task → feature-plan
    Input: clarity handoff
    Output: plan with chunks
 
 3. For each chunk:
-   a. /feature-implement
+   a. Task → feature-implement
       Input: plan chunk
       Output: implementation report, code committed
    b. → Review Loop (Phase 3)
 
-4. /feature-test-checklist
+4. Task → feature-test-checklist
    Input: implementation report
    Output: manual test checklist
 
-5. /pr-description
+5. Task → pr-description
    Input: all handoffs
    Output: PR title + body
 ```
+
+**Subagent file mapping:**
+
+- `feature-clarity` → `.cursor/agents/feature/subagent-1-feature-clarity.md`
+- `feature-plan` → `.cursor/agents/feature/subagent-2-feature-plan.md`
+- `feature-implement` → `.cursor/agents/feature/subagent-3-implement.md`
+- `feature-test-checklist` → `.cursor/agents/feature/subagent-4-test-checklist.md`
 
 ---
 
@@ -153,28 +184,36 @@ After implementation, run the review loop. Max 5 iterations.
 
 ```
 Loop:
-  A. /test-executor
+  A. Task → test-executor
      Input: implementation report + git diff
      Output: test results + failure classification
-     
+
      - If PASS → go to B
      - If FAIL:
        - NEW_TEST_WRONG → test-executor fixes itself, re-run
-       - REGRESSION or BUILD_ERROR → /blocker-resolver, then re-run A
-     
-  B. /pr-review (FRESH CONTEXT — receives only: git diff + task description)
+       - REGRESSION or BUILD_ERROR → Task → blocker-resolver, then re-run A
+
+  B. Task → pr-review (FRESH CONTEXT — receives only: git diff + task description)
      Input: git diff + original task description ONLY
      Output: review verdict
-     
+
      - If SAFE_TO_MERGE → exit loop
-     - If BLOCKERS → /blocker-resolver, then loop to A
-     
+     - If BLOCKERS → Task → blocker-resolver, then loop to A
+
   After 5 iterations:
     - If only WARNINGS → proceed to PR
     - If BLOCKERS remain → proceed with UNRESOLVED_BLOCKERS
 ```
 
-**Critical:** When invoking `/pr-review` and `/blocker-resolver`, pass ONLY:
+**Subagent file mapping:**
+
+- `test-executor` → `.cursor/agents/test-executor/test-executor.md`
+- `pr-review` → `.cursor/agents/pr-review/subagent-pr-review.md`
+- `blocker-resolver` → `.cursor/agents/blocker-resolver/blocker-resolver.md`
+- `pr-description` → `.cursor/agents/pr-description/pr-description.md`
+
+**Critical:** When invoking `pr-review` and `blocker-resolver`, pass ONLY:
+
 - The git diff (`git diff main...HEAD`)
 - The original task description
 - The blocker list (for blocker-resolver)
@@ -187,20 +226,19 @@ Do NOT pass implementation reasoning, clarity handoffs, or plan details. These s
 
 After the review loop exits:
 
-1. Invoke `/pr-description` with all handoffs
+1. Invoke `pr-description` subagent with all handoffs
 2. Collect all DECISION_POINTs from all subagent responses
 3. Collect all UNRESOLVED_BLOCKERs from all subagent responses
-4. Git operations (from inside the worktree):
+4. Git operations (prefix every command with the worktree path):
    ```bash
-   git add -A
-   git commit -m "{{COMMIT_TYPE}}: {{DESCRIPTION}}"
-   git push origin {{BRANCH_NAME}}
+   cd "$WORKTREE_PATH" && git add -A
+   cd "$WORKTREE_PATH" && git commit -m "{{COMMIT_TYPE}}: {{DESCRIPTION}}"
+   cd "$WORKTREE_PATH" && git push origin {{BRANCH_NAME}}
    gh pr create --title "{{PR_TITLE}}" --body "{{PR_BODY}}"
    ```
 5. Output the PR URL
 6. Cleanup worktree:
    ```bash
-   cd {{ORIGINAL_CWD}}
    git worktree remove "{{WORKTREE_PATH}}" --force
    ```
 
@@ -244,19 +282,20 @@ Manual Test Checklist: included in PR description
 
 ## Subagent Invocation Format
 
-When delegating to a subagent, use this format:
+Use the Task tool to delegate to each subagent. Match the subagent name exactly to the `name` field in its YAML frontmatter. Pass all context inline in the task description — subagents have no memory of this conversation and no access to shared files unless explicitly included in the description.
 
 ```
-/subagent-name
+Task(
+  subagent: "bug-investigate",
+  description: """
+    [Full context packet here]
 
-Context packet:
-[paste the context packet or handoff from previous phase]
-
-Task:
-[specific instructions for this subagent]
+    [Specific instructions for this subagent]
+  """
+)
 ```
 
-Parse the subagent's response to extract the handoff block for the next phase.
+Wait for the subagent to complete and return its full output before invoking the next subagent. Parse the returned output to extract the handoff block for the next phase.
 
 ---
 
