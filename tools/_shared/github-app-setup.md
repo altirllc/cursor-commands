@@ -31,12 +31,18 @@ Request these three items:
 
 ### 1. Store the Private Key
 
-Save the `.pem` file to a secure location outside any git repository:
+The `.pem` file from your repo owner will have a name like `your-app-name.YYYY-MM-DD.private-key.pem`.
+
+Save it to a secure location outside any git repository:
 
 ```bash
 mkdir -p ~/.config/github-app
-mv ~/Downloads/your-app.private-key.pem ~/.config/github-app/
-chmod 600 ~/.config/github-app/your-app.private-key.pem
+
+# Replace the filename with your actual .pem file
+# Check what's in Downloads: ls ~/Downloads/*.pem
+mv ~/Downloads/your-app-name.YYYY-MM-DD.private-key.pem ~/.config/github-app/
+
+chmod 600 ~/.config/github-app/*.pem
 ```
 
 **Security**: Never commit this file to any repository.
@@ -48,10 +54,14 @@ Add to your `~/.zshrc` (or `~/.bashrc`):
 ```bash
 export GITHUB_APP_ID="123456"
 export GITHUB_APP_INSTALLATION_ID="78901234"
-export GITHUB_APP_PRIVATE_KEY="$(cat ~/.config/github-app/your-app.private-key.pem)"
+# Use the actual filename of your .pem file
+export GITHUB_APP_PRIVATE_KEY="$(cat ~/.config/github-app/your-app-name.YYYY-MM-DD.private-key.pem)"
 ```
 
-Replace the values with your actual App ID and Installation ID.
+Replace:
+- `123456` with your actual App ID
+- `78901234` with your actual Installation ID
+- `your-app-name.YYYY-MM-DD.private-key.pem` with your actual `.pem` filename
 
 Then reload your shell:
 
