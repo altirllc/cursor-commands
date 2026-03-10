@@ -55,8 +55,8 @@ RESPONSE=$(curl -s -X POST \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   "https://api.github.com/app/installations/${GITHUB_APP_INSTALLATION_ID}/access_tokens")
 
-# Extract token from response
-TOKEN=$(echo "${RESPONSE}" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+# Extract token from response (handles both "token":"..." and "token": "...")
+TOKEN=$(echo "${RESPONSE}" | grep -o '"token"[[:space:]]*:[[:space:]]*"[^"]*"' | cut -d'"' -f4)
 
 if [[ -z "${TOKEN}" ]]; then
   echo "Error: Failed to get installation token. Response:" >&2
