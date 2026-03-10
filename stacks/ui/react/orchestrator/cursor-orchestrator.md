@@ -58,38 +58,46 @@ If `type` is `auto`, classify based on the description:
 
 ## Phase 1 — Setup
 
-1. Generate task ID (timestamp or short UUID)
-2. Create a worktree with branch:
+### Steps 1–3: Execution (delegate to setup subagent)
 
-   ```bash
-   BRANCH_NAME="agent/{{TASK_TYPE}}-{{TASK_ID}}-{{SHORT_SLUG}}"
-   WORKTREE_PATH=".worktrees/{{TASK_ID}}"
-   git worktree add "$WORKTREE_PATH" -b "$BRANCH_NAME"
+1. Generate task ID (timestamp or short UUID) and SHORT_SLUG (e.g., from task description)
+2. **Task → setup** with:
+
+   ```
+   TASK_ID: {{TASK_ID}}
+   TASK_TYPE: {{TASK_TYPE}}
+   SHORT_SLUG: {{SHORT_SLUG}}
+
+   Create worktree at .worktrees/{{TASK_ID}}, run setup-github-remote.sh, return handoff.
    ```
 
-   All subsequent git operations must use `cd "$WORKTREE_PATH" && git ...` since each terminal call runs in a fresh shell.
+3. Parse the setup handoff.
 
-3. **Mint GitHub token and configure git remote:**
-   ```bash
-   # Save original remote URL for later restoration
-   ORIGINAL_REMOTE=$(cd "$WORKTREE_PATH" && git remote get-url origin)
-   
-   # Mint installation access token (valid for 1 hour)
-   GITHUB_TOKEN=$(bash scripts/mint-github-token.sh)
-   
-   # Derive org/repo from remote URL
-   if [[ "$ORIGINAL_REMOTE" =~ github\.com[:/]([^/]+)/([^/.]+) ]]; then
-     ORG="${BASH_REMATCH[1]}"
-     REPO="${BASH_REMATCH[2]}"
-   fi
-   
-   # Set remote to use token for push operations
-   cd "$WORKTREE_PATH" && git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${ORG}/${REPO}.git"
-   ```
+   **If STATUS is FAILED:**
+   - **HALT immediately.** Do NOT proceed to Phase 2.
+   - Output to user:
+     ```
+     ════════════════════════════════════════════════════════════════
+     PHASE 1 HALTED: Setup failed
+     ════════════════════════════════════════════════════════════════
+     Task: {{TASK_ID}}
+     Error: [ERROR from handoff OUTPUT section]
+     ════════════════════════════════════════════════════════════════
+     ```
+   - If WORKTREE_CREATED=true in handoff, clean up: `git worktree remove "$WORKTREE_PATH" --force`
+   - Stop. Do not invoke any other subagents.
+
+   **If STATUS is COMPLETED:**
+   - Extract WORKTREE_PATH and BRANCH_NAME from the handoff OUTPUT section.
+   - Proceed to steps 4–6.
+
+### Steps 4–6: Orchestrator (you do these directly)
 
 4. Read `rules/react-conventions.md` and `rules/memory.md`
 5. Build the context packet from the template in `_shared/context-packet.md`
-6. Route to the correct workflow
+6. Route to the correct workflow (Phase 2)
+
+All subsequent git operations must use `cd "$WORKTREE_PATH" && git ...` since each terminal call runs in a fresh shell.
 
 ---
 
@@ -119,8 +127,10 @@ Based on task type, delegate to subagents in sequence using the Task tool.
    Output: manual test checklist
 
 6. Task → pr-description
-   Input: all handoffs
+   Input: all handoffs (includes test-checklist handoff)
    Output: PR title + body
+
+   **SEQUENTIAL:** Step 6 must wait for Step 5 to complete. Do not run in parallel.
 ```
 
 **Subagent file mapping:**
@@ -150,8 +160,10 @@ Based on task type, delegate to subagents in sequence using the Task tool.
    Output: manual test checklist
 
 5. Task → pr-description
-   Input: all handoffs
+   Input: all handoffs (includes test-checklist handoff)
    Output: PR title + body
+
+   **SEQUENTIAL:** Step 5 must wait for Step 4 to complete. Do not run in parallel.
 ```
 
 **Subagent file mapping:**
@@ -183,8 +195,10 @@ Based on task type, delegate to subagents in sequence using the Task tool.
    Output: manual test checklist
 
 5. Task → pr-description
-   Input: all handoffs
+   Input: all handoffs (includes test-checklist handoff)
    Output: PR title + body
+
+   **SEQUENTIAL:** Step 5 must wait for Step 4 to complete. Do not run in parallel.
 ```
 
 **Subagent file mapping:**
@@ -225,6 +239,7 @@ Loop:
 
 **Subagent file mapping:**
 
+- `setup` → `.cursor/agents/setup/subagent-setup.md` (Phase 1 only)
 - `test-executor` → `.cursor/agents/test-executor/test-executor.md`
 - `pr-review` → `.cursor/agents/pr-review/subagent-pr-review.md`
 - `blocker-resolver` → `.cursor/agents/blocker-resolver/blocker-resolver.md`
@@ -245,24 +260,22 @@ Do NOT pass implementation reasoning, clarity handoffs, or plan details. These s
 After the review loop exits:
 
 1. Invoke `pr-description` subagent with all handoffs
+
+   **SEQUENTIAL ONLY — do NOT run Test Checklist and PR Description in parallel.** PR Description requires the Test Checklist handoff to populate the "Manual Test Checklist" section. Always invoke test-checklist (bug/enhancement/feature) first, wait for completion, then invoke pr-description.
+
 2. Collect all DECISION_POINTs from all subagent responses
 3. Collect all UNRESOLVED_BLOCKERs from all subagent responses
-4. Git operations (prefix every command with the worktree path):
+4. Git operations — run as one block so variables persist:
    ```bash
-   cd "$WORKTREE_PATH" && git add -A
-   cd "$WORKTREE_PATH" && git commit -m "{{COMMIT_TYPE}}: {{DESCRIPTION}}"
-   cd "$WORKTREE_PATH" && git push origin {{BRANCH_NAME}}
-   
-   # Create PR via GitHub API (using token from Phase 1)
-   PR_URL=$(GITHUB_TOKEN="$GITHUB_TOKEN" bash scripts/github-create-pr.sh "{{BRANCH_NAME}}" "{{PR_TITLE}}" "{{PR_BODY}}" "develop")
+   cd "$WORKTREE_PATH" && git add -A && git commit -m "{{COMMIT_TYPE}}: {{DESCRIPTION}}" && git push origin "$BRANCH_NAME"
+   source "$WORKTREE_PATH/.github-setup.env"
+   PR_URL=$(env GITHUB_TOKEN="$GITHUB_TOKEN" bash scripts/github-create-pr.sh "$BRANCH_NAME" "{{PR_TITLE}}" "{{PR_BODY}}" "develop" "$ORG" "$REPO")
+   cd "$WORKTREE_PATH" && git remote set-url origin "$ORIGINAL_REMOTE"
    ```
 5. Output the PR URL
-6. Restore original remote URL and cleanup worktree:
+6. Cleanup worktree:
    ```bash
-   # Restore original remote URL
-   cd "$WORKTREE_PATH" && git remote set-url origin "$ORIGINAL_REMOTE"
-   
-   git worktree remove "{{WORKTREE_PATH}}" --force
+   git worktree remove "$WORKTREE_PATH" --force
    ```
 
 ---
@@ -324,10 +337,11 @@ Wait for the subagent to complete and return its full output before invoking the
 
 ## Error Handling
 
-1. **Subagent failure**: If a subagent returns an error, retry once. If still fails, mark as UNRESOLVED_BLOCKER and continue.
-2. **Git operation failure**: Check for conflicts, uncommitted changes, or auth issues. Try to resolve. If cannot, report error and stop.
-3. **Review loop exhausted**: Create the PR anyway with all UNRESOLVED_BLOCKERs documented.
-4. **Timeout**: If any subagent runs longer than 10 minutes, terminate and mark as UNRESOLVED_BLOCKER.
+1. **GitHub token mint failure** (Phase 1): STOP immediately. Do not proceed. Output exact error summary to user. See Phase 1 guard rail.
+2. **Subagent failure**: If a subagent returns an error, retry once. If still fails, mark as UNRESOLVED_BLOCKER and continue.
+3. **Git operation failure**: Check for conflicts, uncommitted changes, or auth issues. Try to resolve. If cannot, report error and stop.
+4. **Review loop exhausted**: Create the PR anyway with all UNRESOLVED_BLOCKERs documented.
+5. **Timeout**: If any subagent runs longer than 10 minutes, terminate and mark as UNRESOLVED_BLOCKER.
 
 ---
 
@@ -355,7 +369,7 @@ DO NOT use the GitHub token or call any GitHub API for:
 
 ### Implementation Rules
 
-1. **No direct API calls** — Always use the provided scripts (`mint-github-token.sh`, `github-create-pr.sh`)
+1. **No direct API calls** — Always use the provided scripts (`setup-github-remote.sh`, `github-create-pr.sh`)
 2. **No token exposure** — Never log, print, or include the token in any output
 3. **No token reuse** — Each task mints its own token; do not cache or share tokens between tasks
 4. **Fail safely** — If a GitHub operation fails, report the error and stop; do not retry with different API calls

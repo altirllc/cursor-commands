@@ -51,6 +51,7 @@ What it should focus on. What it should NOT re-do.]
    - COMPLETED → proceed to next phase
    - PARTIAL → proceed but flag in PR description
    - BLOCKED → route to blocker-resolver agent
+   - FAILED → (setup agent only) halt pipeline, do not proceed; report error to user
 3. UNRESOLVED BLOCKERS are collected across all phases and included in the final PR description.
 4. DECISION POINTS are collected across all phases and included in the final PR description.
 5. The full handoff block (OUTPUT section especially) is injected into the next agent's context packet as PREVIOUS PHASE OUTPUT.

@@ -3,6 +3,7 @@
 .env.local
 .env.github
 .env.*.local
+.github-setup.env
 
 # OS files
 .DS_Store

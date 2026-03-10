@@ -27,6 +27,8 @@ The human's primary focus when reviewing: **DECISIONS MADE BY AGENT** and **UNRE
 
 ## Inputs
 
+**Required:** This agent must run AFTER the Test Checklist agent. Do not invoke in parallel — the manual test checklist handoff is required.
+
 1. **Task description** — the original task
 2. **Implementation summary** — from the implement agent's handoff
 3. **Review findings** — from the PR review agent's verdict

@@ -68,6 +68,8 @@ your-project/
 │   │   │   ├── context-packet.md
 │   │   │   ├── handoff-format.md
 │   │   │   └── quality-gate.md
+│   │   ├── setup/
+│   │   │   └── subagent-setup.md       # Phase 1: worktree + token (orchestrator invokes)
 │   │   ├── workflows/
 │   │   │   ├── feature.md
 │   │   │   ├── enhancement.md

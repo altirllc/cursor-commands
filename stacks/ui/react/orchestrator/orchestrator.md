@@ -41,36 +41,36 @@ If `type` is `auto`, classify based on the description:
 
 ## Phase 1 — Setup
 
-1. Create a worktree with a new branch:
-   ```bash
-   BRANCH_NAME="agent/{{TASK_TYPE}}-{{TASK_ID}}-{{SHORT_SLUG}}"
-   WORKTREE_PATH=".worktrees/{{TASK_ID}}"
-   git worktree add "$WORKTREE_PATH" -b "$BRANCH_NAME"
-   cd "$WORKTREE_PATH"
-   ```
-   All subsequent work happens inside this worktree. The main working directory stays clean.
+### Steps 1–3: Execution (delegate to setup subagent)
 
-2. **Mint GitHub token and configure git remote:**
-   ```bash
-   # Save original remote URL for later restoration
-   ORIGINAL_REMOTE=$(git remote get-url origin)
-   
-   # Mint installation access token (valid for 1 hour)
-   GITHUB_TOKEN=$(bash scripts/mint-github-token.sh)
-   
-   # Derive org/repo from remote URL
-   if [[ "$ORIGINAL_REMOTE" =~ github\.com[:/]([^/]+)/([^/.]+) ]]; then
-     ORG="${BASH_REMATCH[1]}"
-     REPO="${BASH_REMATCH[2]}"
-   fi
-   
-   # Set remote to use token for push operations
-   git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${ORG}/${REPO}.git"
-   ```
+1. Generate task ID (timestamp or short UUID) and SHORT_SLUG (e.g., from task description)
+2. **Invoke Setup Agent** with TASK_ID, TASK_TYPE, SHORT_SLUG. The agent creates the worktree, runs setup-github-remote.sh, and returns a handoff.
+3. Parse the setup handoff.
 
-3. Read `rules/react-conventions.md` and `rules/memory.md`
-4. Build the context packet from the template in `_shared/context-packet.md`
-5. Route to the correct workflow
+   **If STATUS is FAILED:**
+   - **HALT immediately.** Do NOT proceed to Phase 2.
+   - Output to user:
+     ```
+     ════════════════════════════════════════════════════════════════
+     PHASE 1 HALTED: Setup failed
+     ════════════════════════════════════════════════════════════════
+     Task: {{TASK_ID}}
+     Error: [ERROR from handoff OUTPUT section]
+     ════════════════════════════════════════════════════════════════
+     ```
+   - If WORKTREE_CREATED=true in handoff, clean up: `git worktree remove "$WORKTREE_PATH" --force`
+   - Stop. Do not invoke any other agents.
+
+   **If STATUS is COMPLETED:**
+   - Extract WORKTREE_PATH and BRANCH_NAME from the handoff OUTPUT section.
+   - Proceed to steps 4–6.
+
+### Steps 4–6: Orchestrator (you do these directly)
+
+4. `cd "$WORKTREE_PATH"` — all subsequent work happens inside this worktree
+5. Read `rules/react-conventions.md` and `rules/memory.md`
+6. Build the context packet from the template in `_shared/context-packet.md`
+7. Route to the correct workflow (Phase 2)
 
 ---
 
@@ -158,26 +158,25 @@ After implementation, run the review loop. This is the quality gate that replace
 After the review loop exits:
 
 1. Run **Test Checklist Agent** → produces manual test checklist
-2. Run **PR Description Agent** → produces structured PR body
+2. Run **PR Description Agent** → produces structured PR body (requires Test Checklist handoff)
+
+   **SEQUENTIAL ONLY — do NOT run these in parallel.** PR Description Agent requires the Test Checklist Agent's handoff to populate the "Manual Test Checklist" section of the PR body. Wait for Test Checklist to complete before invoking PR Description.
+
 3. Collect all DECISION_POINTs from all phases
 4. Collect all UNRESOLVED_BLOCKERs from all phases
-5. Git operations (from inside the worktree):
+5. Git operations — run as one block so variables persist:
    ```bash
-   git add -A
-   git commit -m "{{COMMIT_TYPE}}: {{DESCRIPTION}}"
-   git push origin {{BRANCH_NAME}}
-   
-   # Create PR via GitHub API (using token from Phase 1)
-   PR_URL=$(bash scripts/github-create-pr.sh "{{BRANCH_NAME}}" "{{PR_TITLE}}" "{{PR_BODY}}" "develop")
-   ```
-6. Output the PR URL
-7. Restore original remote URL and cleanup worktree:
-   ```bash
-   # Restore original remote URL
+   git add -A && git commit -m "{{COMMIT_TYPE}}: {{DESCRIPTION}}" && git push origin "$BRANCH_NAME"
+   source .github-setup.env
+   PR_URL=$(env GITHUB_TOKEN="$GITHUB_TOKEN" bash scripts/github-create-pr.sh "$BRANCH_NAME" "{{PR_TITLE}}" "{{PR_BODY}}" "develop" "$ORG" "$REPO")
    git remote set-url origin "$ORIGINAL_REMOTE"
-   
-   cd {{ORIGINAL_CWD}}
-   git worktree remove "{{WORKTREE_PATH}}" --force
+   ```
+   (Run from worktree; .github-setup.env was written by setup-github-remote.sh in Phase 1)
+6. Output the PR URL
+7. Cleanup worktree:
+   ```bash
+   cd ..
+   git worktree remove "$WORKTREE_PATH" --force
    ```
    The branch remains on the remote; only the local worktree is removed.
 
@@ -223,10 +222,11 @@ Manual Test Checklist: included in PR description
 
 If the orchestrator itself encounters an error:
 
-1. **Agent spawn failure**: retry once. If still fails, skip to next phase that does not depend on the failed agent. Mark as UNRESOLVED_BLOCKER.
-2. **Git operation failure**: check for conflicts, uncommitted changes, or auth issues. Try to resolve. If cannot, report error and stop.
-3. **All agents fail in the review loop**: create the PR anyway with all UNRESOLVED_BLOCKERs documented. The human decides.
-4. **Timeout**: if any agent runs longer than 10 minutes, terminate and mark as UNRESOLVED_BLOCKER.
+1. **GitHub token mint failure** (Phase 1): STOP immediately. Do not proceed. Output exact error summary to user. See Phase 1 guard rail.
+2. **Agent spawn failure**: retry once. If still fails, skip to next phase that does not depend on the failed agent. Mark as UNRESOLVED_BLOCKER.
+3. **Git operation failure**: check for conflicts, uncommitted changes, or auth issues. Try to resolve. If cannot, report error and stop.
+4. **All agents fail in the review loop**: create the PR anyway with all UNRESOLVED_BLOCKERs documented. The human decides.
+5. **Timeout**: if any agent runs longer than 10 minutes, terminate and mark as UNRESOLVED_BLOCKER.
 
 ---
 
@@ -254,7 +254,7 @@ DO NOT use the GitHub token or call any GitHub API for:
 
 ### Implementation Rules
 
-1. **No direct API calls** — Always use the provided scripts (`mint-github-token.sh`, `github-create-pr.sh`)
+1. **No direct API calls** — Always use the provided scripts (`setup-github-remote.sh`, `github-create-pr.sh`)
 2. **No token exposure** — Never log, print, or include the token in any output
 3. **No token reuse** — Each task mints its own token; do not cache or share tokens between tasks
 4. **Fail safely** — If a GitHub operation fails, report the error and stop; do not retry with different API calls

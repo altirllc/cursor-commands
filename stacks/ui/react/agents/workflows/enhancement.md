@@ -49,8 +49,9 @@ Phase 6: TEST CHECKLIST AGENT
 Phase 7: PR DESCRIPTION AGENT
   Agent: agents/pr-description/pr-description.md
   Mode: read-only
-  Input: all handoffs + decision points + test results
+  Input: all handoffs + decision points + test results (includes Phase 6 handoff)
   Output: PR title + PR body
+  Guardrail: SEQUENTIAL — must run after Phase 6 completes. Do NOT run in parallel.
 
 Phase 8: GIT OPERATIONS
   Mode: shell

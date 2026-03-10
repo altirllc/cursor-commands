@@ -110,6 +110,8 @@ react/
     │   ├── context-packet.md
     │   ├── handoff-format.md
     │   └── quality-gate.md
+    ├── setup/
+    │   └── subagent-setup.md          # Phase 1: worktree + token (orchestrator invokes)
     ├── workflows/
     │   ├── feature.md                 # 9-phase feature pipeline
     │   ├── bug-fix.md                 # 9-phase bug-fix pipeline

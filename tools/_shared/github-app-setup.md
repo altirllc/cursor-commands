@@ -160,11 +160,9 @@ Token is used for git push and PR creation
 
 The orchestrator:
 
-1. Calls `mint-github-token.sh` which loads `.env.github`
-2. Mints a token at the start of each task
-3. Configures git remote to use the token
-4. Uses the token for push and PR creation
-5. Restores the original remote URL when done
+1. Calls `setup-github-remote.sh` which parses remote, loads `.env.github`, mints a token, sets the remote, and writes `.github-setup.env`
+2. Uses the token for git push and PR creation
+3. Restores the original remote URL when done
 
 **Why this approach?**
 
