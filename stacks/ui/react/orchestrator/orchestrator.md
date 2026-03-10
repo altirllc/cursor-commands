@@ -50,9 +50,27 @@ If `type` is `auto`, classify based on the description:
    ```
    All subsequent work happens inside this worktree. The main working directory stays clean.
 
-2. Read `rules/react-conventions.md` and `rules/memory.md`
-3. Build the context packet from the template in `_shared/context-packet.md`
-4. Route to the correct workflow
+2. **Mint GitHub token and configure git remote:**
+   ```bash
+   # Save original remote URL for later restoration
+   ORIGINAL_REMOTE=$(git remote get-url origin)
+   
+   # Mint installation access token (valid for 1 hour)
+   GITHUB_TOKEN=$(bash scripts/github-get-token.sh)
+   
+   # Derive org/repo from remote URL
+   if [[ "$ORIGINAL_REMOTE" =~ github\.com[:/]([^/]+)/([^/.]+) ]]; then
+     ORG="${BASH_REMATCH[1]}"
+     REPO="${BASH_REMATCH[2]}"
+   fi
+   
+   # Set remote to use token for push operations
+   git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${ORG}/${REPO}.git"
+   ```
+
+3. Read `rules/react-conventions.md` and `rules/memory.md`
+4. Build the context packet from the template in `_shared/context-packet.md`
+5. Route to the correct workflow
 
 ---
 
@@ -148,11 +166,16 @@ After the review loop exits:
    git add -A
    git commit -m "{{COMMIT_TYPE}}: {{DESCRIPTION}}"
    git push origin {{BRANCH_NAME}}
-   gh pr create --title "{{PR_TITLE}}" --body "{{PR_BODY}}"
+   
+   # Create PR via GitHub API (using token from Phase 1)
+   PR_URL=$(bash scripts/github-create-pr.sh "{{BRANCH_NAME}}" "{{PR_TITLE}}" "{{PR_BODY}}" "develop")
    ```
 6. Output the PR URL
-7. Cleanup worktree:
+7. Restore original remote URL and cleanup worktree:
    ```bash
+   # Restore original remote URL
+   git remote set-url origin "$ORIGINAL_REMOTE"
+   
    cd {{ORIGINAL_CWD}}
    git worktree remove "{{WORKTREE_PATH}}" --force
    ```
@@ -204,6 +227,37 @@ If the orchestrator itself encounters an error:
 2. **Git operation failure**: check for conflicts, uncommitted changes, or auth issues. Try to resolve. If cannot, report error and stop.
 3. **All agents fail in the review loop**: create the PR anyway with all UNRESOLVED_BLOCKERs documented. The human decides.
 4. **Timeout**: if any agent runs longer than 10 minutes, terminate and mark as UNRESOLVED_BLOCKER.
+
+---
+
+## GitHub API Guardrails
+
+**CRITICAL: The GitHub token is scoped and must only be used for specific operations.**
+
+### Allowed Operations
+
+The GitHub token may ONLY be used for:
+
+1. **Pushing commits** — `git push origin {{BRANCH_NAME}}`
+2. **Creating PRs** — via `scripts/github-create-pr.sh` ONLY
+
+### Forbidden Operations
+
+DO NOT use the GitHub token or call any GitHub API for:
+
+- Creating, closing, or updating issues
+- Deleting branches or tags
+- Modifying repository settings
+- Managing webhooks or integrations
+- Accessing other repositories
+- Any API endpoint not explicitly listed in "Allowed Operations"
+
+### Implementation Rules
+
+1. **No direct API calls** — Always use the provided scripts (`github-get-token.sh`, `github-create-pr.sh`)
+2. **No token exposure** — Never log, print, or include the token in any output
+3. **No token reuse** — Each task mints its own token; do not cache or share tokens between tasks
+4. **Fail safely** — If a GitHub operation fails, report the error and stop; do not retry with different API calls
 
 ---
 

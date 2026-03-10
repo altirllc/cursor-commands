@@ -4,6 +4,57 @@ Fully autonomous multi-agent pipelines for feature development, bug fixes, and e
 
 ---
 
+## Architecture Overview
+
+```
+Task Description + Clarification Answers
+                |
+        [ Orchestrator ]
+                |
+    +-----------+-----------+
+    |           |           |
+ Feature    Bug Fix    Enhancement
+ Pipeline   Pipeline    Pipeline
+    |           |           |
+    v           v           v
+ Clarity    Investigate  Clarity
+    |           |           |
+  Plan        Plan      Implement
+    |           |           |
+ Implement   Implement   Test
+    |           |           |
+   Test       Test      Review ←--+
+    |           |           |      |
+  Review ←-+ Review ←-+ PR Desc  | (self-healing
+    |      |    |      |          |  review loop)
+ PR Desc   | PR Desc   +--→ Blocker Resolver
+    |      |    |
+    v      +----+--→ Blocker Resolver
+  GitHub PR
+```
+
+Each pipeline shares:
+
+- **Test Executor** — runs tests, classifies failures, auto-fixes test issues
+- **PR Review** — fresh-context regression analysis with blocker classification
+- **Blocker Resolver** — minimal fixes with fresh context (no original reasoning)
+- **PR Description** — generates complete GitHub PR body
+
+---
+
+## Workflows
+
+| Task Type       | When to Use                            | Pipeline                                                          |
+| --------------- | -------------------------------------- | ----------------------------------------------------------------- |
+| **Feature**     | Large feature, 5+ files, new contracts | Clarity → Plan → Implement → Test → Review → PR                   |
+| **Bug Fix**     | Something that worked is now broken    | Investigate → Plan → Implement → Test → Review → PR               |
+| **Enhancement** | Small improvement, 1-4 files           | Clarity → Implement → Test → Review → PR                          |
+| **Design UI**   | New UI that needs design decisions     | UI Scan (once) → Design UI (per feature, feeds into any pipeline) |
+
+All workflows include the **self-healing review loop**: Test → Review → Blocker Resolve, up to 5 iterations.
+
+---
+
 ## Pipelines
 
 ### Feature Pipeline (9 phases)
@@ -39,6 +90,98 @@ For small improvements touching 1-4 files.
 ### Design UI (optional, feeds into any pipeline)
 - **UI Scan** (`agents/design-ui/subagent-ui-scan.md`) — run once per project
 - **Design UI** (`agents/design-ui/subagent-design-ui.md`) — multiple design varieties from existing patterns
+
+---
+
+## Directory Structure
+
+```
+react/
+├── README.md                          # This file
+├── rules/                             # Project-specific (user customizes)
+│   ├── react-conventions.md
+│   └── memory.md
+├── orchestrator/
+│   ├── orchestrator.md                # Claude Code orchestrator (inline execution)
+│   └── cursor-orchestrator.md         # Cursor command (→ .cursor/commands/)
+└── agents/
+    ├── _shared/                       # Foundation (referenced by all agents)
+    │   ├── autonomous-protocol.md
+    │   ├── context-packet.md
+    │   ├── handoff-format.md
+    │   └── quality-gate.md
+    ├── workflows/
+    │   ├── feature.md                 # 9-phase feature pipeline
+    │   ├── bug-fix.md                 # 9-phase bug-fix pipeline
+    │   └── enhancement.md             # 8-phase enhancement pipeline
+    ├── feature/
+    │   ├── subagent-1-feature-clarity.md
+    │   ├── subagent-2-feature-plan.md
+    │   ├── subagent-3-implement.md
+    │   └── subagent-4-test-checklist.md
+    ├── bug-fix/
+    │   ├── subagent-1-investigate.md
+    │   ├── subagent-2-plan.md
+    │   ├── subagent-3-implement.md
+    │   └── subagent-4-test-checklist.md
+    ├── enhancement/
+    │   ├── subagent-1-feature-clarity.md
+    │   ├── subagent-2-implement.md
+    │   └── subagent-3-test-checklist.md
+    ├── design-ui/
+    │   ├── subagent-ui-scan.md
+    │   └── subagent-design-ui.md
+    ├── pr-review/
+    │   └── subagent-pr-review.md
+    ├── test-executor/
+    │   └── test-executor.md
+    ├── blocker-resolver/
+    │   └── blocker-resolver.md
+    └── pr-description/
+        └── pr-description.md
+```
+
+---
+
+## Key Concepts
+
+### Autonomous Operation
+
+Every agent runs without human intervention. Ambiguities are resolved by: (1) checking clarification answers, (2) reading the codebase, (3) making the safer engineering judgment and documenting it as a `DECISION_POINT`.
+
+### Structured Handoffs
+
+Agents communicate via machine-readable handoff blocks with delimited sections (STATUS, SUMMARY, FILES_READ, etc.). This enables reliable orchestration and audit trails.
+
+### Self-Healing Review Loop
+
+```
+Implement → Test Executor → PR Review → Blocker Resolver → Test Executor → ...
+                                                              (max 5 loops)
+```
+
+Only BLOCKER-classified findings trigger the loop. Warnings, suggestions, and tech debt are noted but don't block.
+
+### Fresh Context Principle
+
+The Blocker Resolver and PR Review agents never see the original implementation reasoning. They receive only the diff, the spec, and the blocker list. Fresh eyes catch more bugs.
+
+- **Cursor**: Real isolation — each subagent runs in its own context window
+- **Claude Code**: Simulated — agent is instructed to ignore prior reasoning
+
+### Classification Gates
+
+- Enhancement agents check if scope exceeds 4 files → auto-reclassify to Feature
+- Bug fix investigation checks confidence → falls back to hypothesis-based approach
+
+### Blocker Classification
+
+| Level      | Triggers Fix Loop? | Examples                                    |
+| ---------- | ------------------ | ------------------------------------------- |
+| BLOCKER    | Yes                | Logic errors, runtime crashes, type breaks  |
+| WARNING    | No                 | Missing loading states, perf concerns, a11y |
+| SUGGESTION | No                 | Naming preferences, code organization       |
+| TECH_DEBT  | No                 | Issues too large for this PR                |
 
 ---
 
@@ -78,3 +221,13 @@ Every agent:
 - Outputs a structured handoff block (see `_shared/handoff-format.md`)
 - Lists every file it read (anti-hallucination audit trail)
 - Documents every autonomous decision as a `DECISION_POINT`
+
+---
+
+## Scaling
+
+- **Parallel execution**: Use git worktrees for concurrent tasks (one worktree per task)
+- **State persistence**: Each task gets a JSON state file for resumability
+- **100+ tasks/day**: Orchestrator manages worktree lifecycle automatically
+
+See `orchestrator/orchestrator.md` for full state machine details.

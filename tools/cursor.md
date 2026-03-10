@@ -14,6 +14,18 @@ This architecture uses **Cursor subagents** for true context isolation. Each pha
 
 ---
 
+## Prerequisites
+
+### GitHub App Authentication
+
+The orchestrator uses GitHub App tokens for git push and PR creation. **Complete the GitHub App setup first:**
+
+→ **[GitHub App Setup Guide](_shared/github-app-setup.md)**
+
+This is required for the orchestrator to create branches and PRs automatically.
+
+---
+
 ## Setup for a New Project
 
 ```bash
@@ -32,6 +44,9 @@ cp /tmp/cursor-commands/stacks/ui/react/orchestrator/cursor-orchestrator.md .cur
 
 # Copy rules
 cp -r /tmp/cursor-commands/stacks/ui/react/rules/* .cursor/rules/
+
+# Copy GitHub scripts (required for git push and PR creation)
+cp -r /tmp/cursor-commands/scripts/ scripts/
 
 # Edit project-specific files
 # .cursor/rules/react-conventions.md  — fill with YOUR project's conventions
@@ -241,8 +256,9 @@ This is genuine fresh-context review, not simulated.
 
 **Git operations fail?**
 
-- Ensure `gh` CLI is installed and authenticated (`gh auth login`)
-- Check that you have push access to the repository
+- Ensure GitHub App environment variables are set (see [GitHub App Setup](_shared/github-app-setup.md))
+- Run `bash scripts/github-get-token.sh` to verify token generation works
+- Check that the GitHub App is installed for your repository
 
 ---
 
@@ -259,6 +275,8 @@ When you want to improve an agent:
 rsync -av /path/to/cursor-commands/stacks/ui/react/agents/ your-project/.cursor/agents/ \
   --exclude='*.DS_Store'
 cp /path/to/cursor-commands/stacks/ui/react/orchestrator/cursor-orchestrator.md your-project/.cursor/commands/orchestrator.md
+rsync -av /path/to/cursor-commands/scripts/ your-project/scripts/ \
+  --exclude='*.DS_Store'
 ```
 
 The `rules/` directory is excluded because it contains project-specific configuration.

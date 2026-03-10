@@ -4,6 +4,18 @@ How to use this multi-agent architecture with Claude Code CLI.
 
 ---
 
+## Prerequisites
+
+### GitHub App Authentication
+
+The orchestrator uses GitHub App tokens for git push and PR creation. **Complete the GitHub App setup first:**
+
+→ **[GitHub App Setup Guide](_shared/github-app-setup.md)**
+
+This is required for the orchestrator to create branches and PRs automatically.
+
+---
+
 ## Setup for a New Project
 
 ```bash
@@ -16,6 +28,9 @@ cp -r /tmp/cursor-commands/stacks/ui/react/agents/ your-project/.claude/agents/
 cp -r /tmp/cursor-commands/stacks/ui/react/workflows/ your-project/.claude/workflows/
 cp -r /tmp/cursor-commands/stacks/ui/react/orchestrator/ your-project/.claude/orchestrator/
 cp -r /tmp/cursor-commands/stacks/ui/react/rules/ your-project/.claude/rules/
+
+# Copy GitHub scripts (required for git push and PR creation)
+cp -r /tmp/cursor-commands/scripts/ your-project/scripts/
 
 # Edit project-specific files
 # your-project/.claude/rules/react-conventions.md  — fill with YOUR project's conventions
@@ -161,6 +176,8 @@ When you want to improve an agent:
 # sync-agents.sh
 rsync -av /path/to/cursor-commands/stacks/ui/react/ your-project/.claude/ \
   --exclude='rules/' \
+  --exclude='*.DS_Store'
+rsync -av /path/to/cursor-commands/scripts/ your-project/scripts/ \
   --exclude='*.DS_Store'
 ```
 

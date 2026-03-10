@@ -1,0 +1,151 @@
+# GitHub App Setup
+
+This guide explains how to configure GitHub App authentication for the autonomous orchestrator. GitHub Apps provide secure, scoped access without requiring personal access tokens or per-user licensing.
+
+---
+
+## Prerequisites
+
+Before starting, verify with your repository owner:
+
+1. **Has a GitHub App been created for your organization?**
+2. **Is the App installed for the repository you're working with?**
+
+If not, ask your repo owner to create and install the GitHub App first.
+
+---
+
+## What You Need from Your Repo Owner
+
+Request these three items:
+
+| Item | Description |
+|------|-------------|
+| **App ID** | Numeric ID from the GitHub App settings page |
+| **Installation ID** | Found in the URL at `https://github.com/organizations/{ORG}/settings/installations` → click the app |
+| **Private Key (.pem file)** | Downloaded from the App settings (Generate a private key) |
+
+---
+
+## Setup Steps
+
+### 1. Store the Private Key
+
+Save the `.pem` file to a secure location outside any git repository:
+
+```bash
+mkdir -p ~/.config/github-app
+mv ~/Downloads/your-app.private-key.pem ~/.config/github-app/
+chmod 600 ~/.config/github-app/your-app.private-key.pem
+```
+
+**Security**: Never commit this file to any repository.
+
+### 2. Configure Environment Variables
+
+Add to your `~/.zshrc` (or `~/.bashrc`):
+
+```bash
+export GITHUB_APP_ID="123456"
+export GITHUB_APP_INSTALLATION_ID="78901234"
+export GITHUB_APP_PRIVATE_KEY="$(cat ~/.config/github-app/your-app.private-key.pem)"
+```
+
+Replace the values with your actual App ID and Installation ID.
+
+Then reload your shell:
+
+```bash
+source ~/.zshrc
+```
+
+### 3. Copy Scripts to Your Project
+
+When setting up a new project, copy the GitHub scripts:
+
+```bash
+cp -r /path/to/cursor-commands/scripts/ your-project/scripts/
+```
+
+Or if you've cloned cursor-commands to a temp location:
+
+```bash
+cp -r /tmp/cursor-commands/scripts/ your-project/scripts/
+```
+
+### 4. Verify Setup
+
+Test that token generation works:
+
+```bash
+cd your-project
+bash scripts/github-get-token.sh
+```
+
+If successful, it outputs a token (starts with `ghs_`). If it fails, check:
+- Environment variables are set correctly
+- The `.pem` file path is correct
+- The App is installed for your repository
+
+---
+
+## How It Works
+
+```
+Your credentials (App ID + Private Key)
+    ↓
+github-get-token.sh creates a JWT (10 min lifetime)
+    ↓
+JWT is exchanged with GitHub for an Installation Token (1 hour lifetime)
+    ↓
+Token is used for git push and PR creation
+```
+
+The orchestrator:
+1. Mints a token at the start of each task
+2. Configures git remote to use the token
+3. Uses the token for push and PR creation
+4. Restores the original remote URL when done
+
+---
+
+## Required GitHub App Permissions
+
+Ensure your GitHub App has at least these permissions:
+
+| Permission | Access Level | Purpose |
+|------------|--------------|---------|
+| Contents | Read & Write | Push commits to branches |
+| Pull requests | Read & Write | Create PRs |
+| Metadata | Read | Access repository info |
+
+---
+
+## Troubleshooting
+
+**"GITHUB_APP_ID environment variable is not set"**
+- Run `echo $GITHUB_APP_ID` to check if it's set
+- Ensure you ran `source ~/.zshrc` after editing
+
+**"Failed to get installation token"**
+- Verify the App ID and Installation ID are correct
+- Check that the App is installed for your specific repository
+- Ensure the private key hasn't expired (regenerate if needed)
+
+**"Could not parse org/repo from remote URL"**
+- The script expects standard GitHub URLs
+- Run `git remote get-url origin` to see your remote format
+- Supported formats: `https://github.com/org/repo` or `git@github.com:org/repo`
+
+**Token works for git but PR creation fails**
+- Verify the App has "Pull requests: Read & Write" permission
+- Check that the base branch exists (default is `develop`)
+
+---
+
+## Security Notes
+
+1. **Never commit credentials** — The `.pem` file and environment variables should never be in any repository
+2. **Token scope** — Installation tokens are scoped to the repositories where the App is installed
+3. **Token lifetime** — Tokens expire after 1 hour; the orchestrator mints fresh tokens per task
+4. **Audit trail** — All actions appear as the GitHub App in commit/PR history, not as a personal user
