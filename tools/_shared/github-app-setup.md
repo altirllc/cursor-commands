@@ -19,11 +19,11 @@ If not, ask your repo owner to create and install the GitHub App first.
 
 Request these three items:
 
-| Item | Description |
-|------|-------------|
-| **App ID** | Numeric ID from the GitHub App settings page |
-| **Installation ID** | Found in the URL at `https://github.com/organizations/{ORG}/settings/installations` → click the app |
-| **Private Key (.pem file)** | Downloaded from the App settings (Generate a private key) |
+| Item                        | Description                                                                                         |
+| --------------------------- | --------------------------------------------------------------------------------------------------- |
+| **App ID**                  | Numeric ID from the GitHub App settings page                                                        |
+| **Installation ID**         | Found in the URL at `https://github.com/organizations/{ORG}/settings/installations` → click the app |
+| **Private Key (.pem file)** | Downloaded from the App settings (Generate a private key)                                           |
 
 ---
 
@@ -57,21 +57,55 @@ You should see your `.pem` file with `-rw-------` permissions.
 
 ### 2. Configure Environment Variables
 
-Add to your `~/.zshrc` (or `~/.bashrc`):
+You need to add three environment variables to your shell configuration file (`~/.zshrc` for zsh, `~/.bashrc` for bash).
+
+**Option A: Using a text editor**
+
+Open the file in your preferred editor:
 
 ```bash
+# Using VS Code
+code ~/.zshrc
+
+# Using nano (terminal-based)
+nano ~/.zshrc
+
+# Using vim
+vim ~/.zshrc
+```
+
+Add these lines at the end of the file:
+
+```bash
+# GitHub App credentials
 export GITHUB_APP_ID="123456"
 export GITHUB_APP_INSTALLATION_ID="78901234"
-# Use the actual filename of your .pem file
 export GITHUB_APP_PRIVATE_KEY="$(cat ~/.config/github-app/your-app-name.YYYY-MM-DD.private-key.pem)"
 ```
 
-Replace:
-- `123456` with your actual App ID
-- `78901234` with your actual Installation ID
-- `your-app-name.YYYY-MM-DD.private-key.pem` with your actual `.pem` filename
+Save and close the file.
 
-Then reload your shell:
+**Option B: Append directly from terminal**
+
+Run this command (replace values first, then copy-paste the whole block):
+
+```bash
+cat >> ~/.zshrc << 'EOF'
+
+# GitHub App credentials
+export GITHUB_APP_ID="123456"
+export GITHUB_APP_INSTALLATION_ID="78901234"
+export GITHUB_APP_PRIVATE_KEY="$(cat ~/.config/github-app/your-app-name.YYYY-MM-DD.private-key.pem)"
+EOF
+```
+
+**Replace these values:**
+
+- `123456` → your actual App ID
+- `78901234` → your actual Installation ID
+- `your-app-name.YYYY-MM-DD.private-key.pem` → your actual `.pem` filename
+
+**Reload your shell configuration:**
 
 ```bash
 source ~/.zshrc
@@ -111,6 +145,7 @@ bash scripts/github-get-token.sh
 ```
 
 If successful, it outputs a token (starts with `ghs_`). If it fails, check:
+
 - Environment variables are set correctly
 - The `.pem` file path is correct
 - The App is installed for your repository
@@ -130,6 +165,7 @@ Token is used for git push and PR creation
 ```
 
 The orchestrator:
+
 1. Mints a token at the start of each task
 2. Configures git remote to use the token
 3. Uses the token for push and PR creation
@@ -141,31 +177,35 @@ The orchestrator:
 
 Ensure your GitHub App has at least these permissions:
 
-| Permission | Access Level | Purpose |
-|------------|--------------|---------|
-| Contents | Read & Write | Push commits to branches |
-| Pull requests | Read & Write | Create PRs |
-| Metadata | Read | Access repository info |
+| Permission    | Access Level | Purpose                  |
+| ------------- | ------------ | ------------------------ |
+| Contents      | Read & Write | Push commits to branches |
+| Pull requests | Read & Write | Create PRs               |
+| Metadata      | Read         | Access repository info   |
 
 ---
 
 ## Troubleshooting
 
 **"GITHUB_APP_ID environment variable is not set"**
+
 - Run `echo $GITHUB_APP_ID` to check if it's set
 - Ensure you ran `source ~/.zshrc` after editing
 
 **"Failed to get installation token"**
+
 - Verify the App ID and Installation ID are correct
 - Check that the App is installed for your specific repository
 - Ensure the private key hasn't expired (regenerate if needed)
 
 **"Could not parse org/repo from remote URL"**
+
 - The script expects standard GitHub URLs
 - Run `git remote get-url origin` to see your remote format
 - Supported formats: `https://github.com/org/repo` or `git@github.com:org/repo`
 
 **Token works for git but PR creation fails**
+
 - Verify the App has "Pull requests: Read & Write" permission
 - Check that the base branch exists (default is `develop`)
 
