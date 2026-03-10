@@ -45,6 +45,14 @@ mv ~/Downloads/your-app-name.YYYY-MM-DD.private-key.pem ~/.config/github-app/
 chmod 600 ~/.config/github-app/*.pem
 ```
 
+**Verify the file was moved:**
+
+```bash
+ls -la ~/.config/github-app/
+```
+
+You should see your `.pem` file with `-rw-------` permissions.
+
 **Security**: Never commit this file to any repository.
 
 ### 2. Configure Environment Variables
@@ -68,6 +76,16 @@ Then reload your shell:
 ```bash
 source ~/.zshrc
 ```
+
+**Verify environment variables are set:**
+
+```bash
+echo "APP_ID: $GITHUB_APP_ID"
+echo "INSTALLATION_ID: $GITHUB_APP_INSTALLATION_ID"
+echo "PRIVATE_KEY set: $([ -n "$GITHUB_APP_PRIVATE_KEY" ] && echo 'YES' || echo 'NO')"
+```
+
+You should see your App ID, Installation ID, and `PRIVATE_KEY set: YES`.
 
 ### 3. Copy Scripts to Your Project
 
