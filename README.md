@@ -50,7 +50,8 @@ The orchestrator uses GitHub App tokens for git push and PR creation:
 ├── shared/
 │   └── principles.md            # Universal principles (all stacks)
 ├── scripts/
-│   ├── github-get-token.sh      # Mints GitHub App installation token
+│   ├── mint-github-token.sh     # Mints GitHub App installation token (loads .env.github)
+│   ├── github-get-token.sh      # Core token generation (called by mint-github-token.sh)
 │   └── github-create-pr.sh      # Creates PR via GitHub API
 ├── tools/
 │   ├── cursor.md                # Cursor IDE setup guide

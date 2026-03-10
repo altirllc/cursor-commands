@@ -56,7 +56,7 @@ If `type` is `auto`, classify based on the description:
    ORIGINAL_REMOTE=$(git remote get-url origin)
    
    # Mint installation access token (valid for 1 hour)
-   GITHUB_TOKEN=$(bash scripts/github-get-token.sh)
+   GITHUB_TOKEN=$(bash scripts/mint-github-token.sh)
    
    # Derive org/repo from remote URL
    if [[ "$ORIGINAL_REMOTE" =~ github\.com[:/]([^/]+)/([^/.]+) ]]; then
@@ -254,7 +254,7 @@ DO NOT use the GitHub token or call any GitHub API for:
 
 ### Implementation Rules
 
-1. **No direct API calls** — Always use the provided scripts (`github-get-token.sh`, `github-create-pr.sh`)
+1. **No direct API calls** — Always use the provided scripts (`mint-github-token.sh`, `github-create-pr.sh`)
 2. **No token exposure** — Never log, print, or include the token in any output
 3. **No token reuse** — Each task mints its own token; do not cache or share tokens between tasks
 4. **Fail safely** — If a GitHub operation fails, report the error and stop; do not retry with different API calls

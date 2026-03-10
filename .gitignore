@@ -1,0 +1,13 @@
+# Environment files with secrets
+.env
+.env.local
+.env.github
+.env.*.local
+
+# OS files
+.DS_Store
+
+# Editor directories
+.idea/
+*.swp
+*.swo

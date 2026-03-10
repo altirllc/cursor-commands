@@ -55,73 +55,64 @@ You should see your `.pem` file with `-rw-------` permissions.
 
 **Security**: Never commit this file to any repository.
 
-### 2. Configure Environment Variables
+### 2. Create the Environment File
 
-You need to add three environment variables to your shell configuration file (`~/.zshrc` for zsh, `~/.bashrc` for bash).
+Create a `.env.github` file in your project root. This file is gitignored and stores your credentials locally.
 
-**Option A: Using a text editor**
-
-Open the file in your preferred editor:
+**Option A: Copy from the example template**
 
 ```bash
-# Using VS Code
-code ~/.zshrc
-
-# Using nano (terminal-based)
-nano ~/.zshrc
-
-# Using vim
-vim ~/.zshrc
+cp .env.github.example .env.github
 ```
 
-Add these lines at the end of the file:
+Then edit `.env.github` with your actual values.
+
+**Option B: Create directly**
+
+Create `.env.github` in your project root with these contents:
 
 ```bash
-# GitHub App credentials
-export GITHUB_APP_ID="123456"
-export GITHUB_APP_INSTALLATION_ID="78901234"
-export GITHUB_APP_PRIVATE_KEY="$(cat ~/.config/github-app/your-app-name.YYYY-MM-DD.private-key.pem)"
+GITHUB_APP_ID=123456
+GITHUB_APP_INSTALLATION_ID=78901234
+GITHUB_APP_PRIVATE_KEY="$(cat ~/.config/github-app/your-app-name.YYYY-MM-DD.private-key.pem)"
 ```
 
-Save and close the file.
-
-**Option B: Append directly from terminal**
-
-Run this command (replace values first, then copy-paste the whole block):
+**Important**: The private key must be the actual key content, not a file path. To get the content:
 
 ```bash
-cat >> ~/.zshrc << 'EOF'
+cat ~/.config/github-app/your-app-name.YYYY-MM-DD.private-key.pem
+```
 
-# GitHub App credentials
-export GITHUB_APP_ID="123456"
-export GITHUB_APP_INSTALLATION_ID="78901234"
-export GITHUB_APP_PRIVATE_KEY="$(cat ~/.config/github-app/your-app-name.YYYY-MM-DD.private-key.pem)"
-EOF
+Then paste the full key (including `-----BEGIN RSA PRIVATE KEY-----` and `-----END RSA PRIVATE KEY-----` lines) into `.env.github`:
+
+```bash
+GITHUB_APP_ID=123456
+GITHUB_APP_INSTALLATION_ID=78901234
+GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEA...
+...your key content...
+-----END RSA PRIVATE KEY-----"
 ```
 
 **Replace these values:**
 
 - `123456` → your actual App ID
 - `78901234` → your actual Installation ID
-- `your-app-name.YYYY-MM-DD.private-key.pem` → your actual `.pem` filename
+- The private key content → your actual `.pem` file contents
 
-**Reload your shell configuration:**
+### 3. Verify the Environment File
 
-```bash
-source ~/.zshrc
-```
-
-**Verify environment variables are set:**
+Check that `.env.github` exists and is gitignored:
 
 ```bash
-echo "APP_ID: $GITHUB_APP_ID"
-echo "INSTALLATION_ID: $GITHUB_APP_INSTALLATION_ID"
-echo "PRIVATE_KEY set: $([ -n "$GITHUB_APP_PRIVATE_KEY" ] && echo 'YES' || echo 'NO')"
+# Should show your file
+ls -la .env.github
+
+# Should show .env.github is ignored
+git status --ignored | grep .env.github
 ```
 
-You should see your App ID, Installation ID, and `PRIVATE_KEY set: YES`.
-
-### 3. Copy Scripts to Your Project
+### 4. Copy Scripts to Your Project
 
 When setting up a new project, copy the GitHub scripts:
 
@@ -135,19 +126,20 @@ Or if you've cloned cursor-commands to a temp location:
 cp -r /tmp/cursor-commands/scripts/ your-project/scripts/
 ```
 
-### 4. Verify Setup
+### 5. Verify Setup
 
 Test that token generation works:
 
 ```bash
 cd your-project
-bash scripts/github-get-token.sh
+bash scripts/mint-github-token.sh
 ```
 
 If successful, it outputs a token (starts with `ghs_`). If it fails, check:
 
-- Environment variables are set correctly
-- The `.pem` file path is correct
+- `.env.github` file exists in project root
+- The App ID and Installation ID are correct
+- The private key content is correct (not a file path)
 - The App is installed for your repository
 
 ---
@@ -155,7 +147,9 @@ If successful, it outputs a token (starts with `ghs_`). If it fails, check:
 ## How It Works
 
 ```
-Your credentials (App ID + Private Key)
+.env.github (App ID + Private Key)
+    ↓
+mint-github-token.sh loads .env.github
     ↓
 github-get-token.sh creates a JWT (10 min lifetime)
     ↓
@@ -166,10 +160,18 @@ Token is used for git push and PR creation
 
 The orchestrator:
 
-1. Mints a token at the start of each task
-2. Configures git remote to use the token
-3. Uses the token for push and PR creation
-4. Restores the original remote URL when done
+1. Calls `mint-github-token.sh` which loads `.env.github`
+2. Mints a token at the start of each task
+3. Configures git remote to use the token
+4. Uses the token for push and PR creation
+5. Restores the original remote URL when done
+
+**Why this approach?**
+
+- Works in Cursor's sandbox (which doesn't load `~/.zshrc`)
+- Works in CI/CD pipelines
+- Portable across machines
+- Secrets stay local and gitignored
 
 ---
 
@@ -189,13 +191,15 @@ Ensure your GitHub App has at least these permissions:
 
 **"GITHUB_APP_ID environment variable is not set"**
 
-- Run `echo $GITHUB_APP_ID` to check if it's set
-- Ensure you ran `source ~/.zshrc` after editing
+- Ensure `.env.github` exists in your project root
+- Check the file has the correct format (no `export` keyword needed)
+- Verify you're using `mint-github-token.sh` (not `github-get-token.sh` directly)
 
 **"Failed to get installation token"**
 
 - Verify the App ID and Installation ID are correct
 - Check that the App is installed for your specific repository
+- Ensure the private key is the actual content, not a file path
 - Ensure the private key hasn't expired (regenerate if needed)
 
 **"Could not parse org/repo from remote URL"**
@@ -213,7 +217,7 @@ Ensure your GitHub App has at least these permissions:
 
 ## Security Notes
 
-1. **Never commit credentials** — The `.pem` file and environment variables should never be in any repository
+1. **Never commit credentials** — `.env.github` is gitignored; never add it to version control
 2. **Token scope** — Installation tokens are scoped to the repositories where the App is installed
 3. **Token lifetime** — Tokens expire after 1 hour; the orchestrator mints fresh tokens per task
 4. **Audit trail** — All actions appear as the GitHub App in commit/PR history, not as a personal user

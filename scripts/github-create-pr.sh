@@ -5,7 +5,7 @@
 # This script uses a GitHub App installation token (not gh CLI) for reliability.
 #
 # Required:
-#   GITHUB_TOKEN - Installation access token (from github-get-token.sh)
+#   GITHUB_TOKEN - Installation access token (from mint-github-token.sh)
 #
 # Arguments:
 #   $1 - Branch name (head branch)
@@ -14,7 +14,7 @@
 #   $4 - Base branch (optional, defaults to "develop")
 #
 # Usage:
-#   GITHUB_TOKEN=$(bash scripts/github-get-token.sh)
+#   GITHUB_TOKEN=$(bash scripts/mint-github-token.sh)
 #   PR_URL=$(bash scripts/github-create-pr.sh "feature/my-branch" "PR Title" "PR body text")
 #
 # The script derives org/repo from the git remote URL.
@@ -39,7 +39,7 @@ fi
 
 if [[ -z "${GITHUB_TOKEN:-}" ]]; then
   echo "Error: GITHUB_TOKEN environment variable is not set" >&2
-  echo "Run: GITHUB_TOKEN=\$(bash scripts/github-get-token.sh)" >&2
+  echo "Run: GITHUB_TOKEN=\$(bash scripts/mint-github-token.sh)" >&2
   exit 1
 fi
 

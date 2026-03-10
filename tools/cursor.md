@@ -257,7 +257,7 @@ This is genuine fresh-context review, not simulated.
 **Git operations fail?**
 
 - Ensure GitHub App environment variables are set (see [GitHub App Setup](_shared/github-app-setup.md))
-- Run `bash scripts/github-get-token.sh` to verify token generation works
+- Run `bash scripts/mint-github-token.sh` to verify token generation works
 - Check that the GitHub App is installed for your repository
 
 ---
