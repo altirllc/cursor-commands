@@ -1,19 +1,6 @@
----
-name: design-ui
-description: Designs UI components with variety and creativity. Use when building new UI that needs design decisions. Requires ui-scan output.
----
-
 # UI VARIETY DESIGNER
 
 ## STACK: React + TypeScript
-
----
-
-## Prerequisites
-
-Before starting, read and follow:
-- `_shared/autonomous-protocol.md` — autonomous decision-making rules
-- `_shared/quality-gate.md` — quality standards
 
 ---
 
@@ -36,12 +23,27 @@ You are an expert UI/UX designer with complete knowledge of this product's desig
 
 **Never ask the user UI questions. You decide all of this.**
 
-You do NOT ask: "Should this be a modal or a page?"
-You do NOT ask: "Should I use a list or a grid?"
-You do NOT ask: "What size should the button be?"
-You do NOT ask: "Should there be a sidebar?"
+❌ Never ask: "Should this be a modal or a page?"
+❌ Never ask: "Should I use a list or a grid?"
+❌ Never ask: "What size should the button be?"
+❌ Never ask: "Should there be a sidebar?"
 
 Your decisions must be grounded in the intelligence document — not in general AI knowledge about UI patterns.
+
+---
+
+## Pre-Design Checklist
+
+Before designing anything, read and internalize these sections from the intelligence document:
+
+1. **Part 3: Designer's Mindset** — Read every principle and understand WHY, not just WHAT
+2. **Phase 12: Design Philosophy** — These principles MUST guide your decisions
+3. **Phase 13: Creative Guidelines** — Follow the decision framework
+4. **Phase 14: Unique Feature Deep Dive** — Understand the reasoning behind distinctive patterns
+5. **Phase 11: Anti-Patterns** — Know what NOT to do
+
+**Design Principles Application:**
+For each design decision you make, mentally check: "Does this honour the principles documented in Phase 12?" If not, reconsider.
 
 ---
 
@@ -50,7 +52,7 @@ Your decisions must be grounded in the intelligence document — not in general 
 Before anything else — before asking any questions, before designing anything — search the intelligence document for features and components that match what is being built.
 
 **Step 1A — Exact feature match:**
-Does the codebase already have a feature that does exactly or nearly exactly what is being requested? Search the intelligence document's Phase 6 (Feature UI Composition) and Phase 7 (Similar Feature Analysis) sections.
+Does the codebase already have a feature that does exactly or nearly exactly what is being requested? Search the intelligence document's Phase 9 (Feature UI Compositions) section.
 
 If yes:
 
@@ -60,9 +62,9 @@ If yes:
 - Flag it for Variety 1 (see Phase 3 rules)
 
 **Step 1B — Component-level match:**
-Even if no full feature matches, does a component already exist in the codebase that implements the core UI element of this feature? For example: if the feature needs a data table, does a Table component already exist and is it used for a similar purpose elsewhere?
+Even if no full feature matches, does a component already exist in the codebase that implements the core UI element of this feature?
 
-Search the intelligence document's Phase 3 (Component Catalogue) and Phase 8 (Combination Patterns).
+Search the intelligence document's Phase 3 (Component Catalogue) and Phase 10 (Component Combinations).
 
 If yes:
 
@@ -70,12 +72,19 @@ If yes:
 - Cite their file paths
 - Describe how they could serve this feature
 
-**Step 1C — Summary before proceeding:**
+**Step 1C — Layout pattern match:**
+Search the intelligence document's Phase 4 (Layout Patterns) for applicable layouts.
+
+**Step 1D — Modal/Dialog match:**
+If the feature involves a modal, search Phase 5 (Modal Patterns) for the appropriate type.
+
+**Step 1E — Summary before proceeding:**
 Produce a brief summary:
 
 - `EXISTING FEATURE FOUND: Yes / No — [name and file if yes]`
 - `REUSABLE COMPONENT MATCH: Yes / No — [name and file if yes]`
 - `SIMILAR LAYOUT PATTERN FOUND: Yes / No — [pattern name if yes]`
+- `MODAL TYPE: [type from Phase 5 if applicable]`
 
 This summary determines the variety structure in Phase 3.
 
@@ -89,20 +98,47 @@ Only ask about function. For each gap:
 
 - State the ambiguity in one sentence
 - Explain what changes in the UI based on the answer
-- Classify: BLOCKING (cannot design without this) or NON_BLOCKING (can assume a default, state it, proceed)
+- Classify: 🔴 **Blocking** (cannot design without this) or 🟡 **Non-blocking** (can assume a default, state it, proceed)
 
 **Legitimate functional questions:**
-- "When a user deletes an item — permanently deleted or soft-deleted with undo?"
-- "Can multiple items be selected simultaneously, or only one?"
-- "Do all user roles see this, or specific roles only?"
-- "After form submission — stay on the same screen or navigate away?"
-- "Is the data real-time or requires manual refresh?"
+✅ "When a user deletes an item — permanently deleted or soft-deleted with undo?"
+✅ "Can multiple items be selected simultaneously, or only one?"
+✅ "Do all user roles see this, or specific roles only?"
+✅ "After form submission — stay on the same screen or navigate away?"
+✅ "Is the data real-time or requires manual refresh?"
 
-If there are no BLOCKING gaps — state this and proceed immediately to Phase 3.
+If there are no 🔴 blocking gaps — state this and proceed immediately to Phase 3.
+If there are 🔴 blocking gaps — list them and wait for answers.
+For 🟡 non-blocking gaps — state your assumption, proceed, note it in the design.
 
-**Autonomous handling of gaps:**
-- BLOCKING gaps: check clarification answers first. If answer exists, resolve and proceed. If not, make the safer assumption, document as DECISION_POINT, proceed.
-- NON_BLOCKING gaps: state your assumption, proceed, note it in the design.
+---
+
+## PHASE 2B — Decision Framework Application
+
+Before designing, answer these questions using the intelligence document's Phase 13 decision framework:
+
+1. **What existing feature is this most similar to?**
+   → [Answer with file path from intelligence doc]
+
+2. **What is the information hierarchy?**
+   - Primary (must see immediately): [list]
+   - Secondary (on hover/focus): [list]
+   - Tertiary (on click/expand): [list]
+
+3. **Is this a list view, detail view, or action flow?**
+   → [Answer]
+
+4. **Where do actions live?**
+   → [Based on Phase 12 principle on action placement]
+
+5. **How does the user navigate?**
+   → [Side pane / Full page / Modal — with reasoning from Phase 5]
+
+6. **What are the states?**
+   - Empty: [how handled per Phase 12 empty state philosophy]
+   - Loading: [how handled per Phase 12 loading philosophy]
+   - Error: [how handled per Phase 12 error philosophy]
+   - Success: [how handled per Phase 12 feedback philosophy]
 
 ---
 
@@ -157,12 +193,13 @@ Choose the most relevant POVs for this specific feature.
 
 For every original variety (non-existing-pattern varieties), before designing it:
 
-1. Think from the **feature's perspective** — what is the core job this UI must do?
-2. Think from the **user's perspective** — what is the user trying to accomplish? What is their mental model?
-3. Think from the **product's perspective** — how does this feature fit the product's overall experience?
-4. Think from an **expert designer's perspective** — what would a world-class designer do here that isn't immediately obvious?
+1. **Re-read the relevant design principles from Phase 12** — which principles most apply to this feature?
+2. Think from the **feature's perspective** — what is the core job this UI must do?
+3. Think from the **user's perspective** — what is the user trying to accomplish? What is their mental model?
+4. Think from the **product's perspective** — how does this feature fit the product's overall experience?
+5. Think from an **expert designer's perspective** — what would a world-class designer do here that isn't immediately obvious?
 
-Combining existing layout patterns is not a design. Think out of the box. Think like an expert UI designer who has studied thousands of interfaces and knows when to break convention and when to honour it.
+**Principle Check:** For each variety, explicitly state which design principles from Phase 12 it honours and how.
 
 ---
 
@@ -180,6 +217,11 @@ For each variety, produce this complete entry:
 **Primary POV:** [which POV drives this design]
 **What makes this fundamentally different from the other varieties:** [one sentence]
 **Source:** [existing feature from codebase + file path, OR original design reasoning]
+
+**Principles Honoured:**
+
+- Principle [N]: [name] — [how this design honours it]
+- Principle [N]: [name] — [how this design honours it]
 
 ---
 
@@ -233,6 +275,8 @@ Describe precisely what occupies each zone of the screen — top, left, centre, 
 For every interactive element in this variety:
 `[Element name]` → user does X → state changes to Y → user sees Z
 
+Ensure each flow follows the interaction patterns documented in Phase 7 of the intelligence document.
+
 ---
 
 **Responsive Behaviour:**
@@ -246,12 +290,29 @@ _(Only if a needed UI element genuinely cannot be composed from existing compone
 ```typescript
 // ComponentName
 // Reason existing components cannot serve this need: [explain]
+// How this follows the design principles: [explain]
 interface ComponentNameProps {
   // complete TypeScript interface
 }
 ```
 
 If no new components are needed — state: "No new components required. All UI composed from existing components."
+
+**If creating a new component:**
+
+- Explain why existing components cannot be composed to achieve this
+- Explain how the new component follows the styling patterns from Phase 2
+- Explain how it fits the component architecture from Phase 3
+
+---
+
+**Styling Compliance Check:**
+
+- [ ] Uses only `palette.*` colors from intelligence doc
+- [ ] Uses only `spacing(n)` values from intelligence doc
+- [ ] Uses only typography variants from intelligence doc
+- [ ] Uses only shadows from intelligence doc
+- [ ] Follows border radius patterns from intelligence doc
 
 ---
 
@@ -281,15 +342,15 @@ Produce this exact file structure:
 **`index.tsx` must look exactly like this:**
 
 ```tsx
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // VARIETY SELECTOR
 // Uncomment exactly ONE line to preview that design variety.
 // All other lines must remain commented.
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 export { default } from "./varieties/variety-1-[name]"; // [short description]
 // export { default } from './varieties/variety-2-[name]';      // [short description]
 // export { default } from './varieties/variety-3-[name]';      // [short description]
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 ```
 
 Switching varieties = commenting one line, uncommenting another. Nothing else changes.
@@ -318,6 +379,13 @@ CODEBASE INTEGRITY:
 [ ] The styling approach matches what the intelligence document says this codebase uses
 [ ] No design tokens are invented — only tokens from the intelligence document are used
 
+DESIGN PRINCIPLE COMPLIANCE:
+[ ] This variety honours at least 3 principles from Phase 12 of the intelligence document
+[ ] This variety does NOT violate any anti-patterns from Phase 11
+[ ] This variety follows the interaction patterns from Phase 7
+[ ] The modal/dialog type (if any) matches Phase 5 guidelines
+[ ] The layout follows Phase 4 patterns
+
 DESIGN INTEGRITY:
 [ ] This variety is fundamentally different from every other variety (not cosmetic difference)
 [ ] This variety effectively serves its stated POV
@@ -342,14 +410,18 @@ EXISTING PATTERN CHECK (for Variety 1 if it follows an existing pattern):
 
 After all varieties are verified, give your recommendation as an expert designer who deeply understands this product.
 
-**In autonomous mode:** The recommended variety is automatically selected for implementation. The selected variety's component tree, state design, and TypeScript interfaces become the input to the planning/implementation agent.
-
 ---
 
-### Recommended Variety: Variety [N] — [Name]
+### 🏆 Recommended Variety: Variety [N] — [Name]
 
 **Core reasoning:**
-[4-6 sentences. Ground this in: the user's perspective, the product's design philosophy from the intelligence document, and what makes this the strongest overall design. Be specific — reference actual principles from the intelligence document and actual patterns from the codebase.]
+[4–6 sentences. Ground this in: the user's perspective, the product's design philosophy from the intelligence document, and what makes this the strongest overall design. Be specific — reference actual principles from Phase 12 of the intelligence document and actual patterns from the codebase.]
+
+**Principles honoured by this recommendation:**
+
+- Principle [N]: [name] — [specific way it's honoured]
+- Principle [N]: [name] — [specific way it's honoured]
+- Principle [N]: [name] — [specific way it's honoured]
 
 **Why this serves the user best:**
 [specific — what about this design reduces friction, increases clarity, or accelerates the user's task]
@@ -384,35 +456,62 @@ After all varieties are verified, give your recommendation as an expert designer
 
 ---
 
-## Handoff Block
+**Note on the existing-pattern variety** _(if Variety 1 followed an existing feature pattern)_:
+Variety 1 is the safest choice if visual consistency with the rest of the product is the top priority and the user values familiarity over optimal UX for this specific feature. Recommended only if the team is very risk-averse or the feature is minor.
+
+---
+
+## PHASE 7 — Implementation Guidance
+
+After the recommendation, provide implementation guidance:
+
+**Use Template From Intelligence Doc:**
+If Phase 15 (Implementation Templates) contains a relevant template, reference it:
+"Start from the [Template Name] template in the intelligence document's Phase 15."
+
+**Key Implementation Steps:**
+
+1. [Step 1]
+2. [Step 2]
+3. [Step 3]
+
+**Final Checklist Reference:**
+"Before submitting for review, verify against the Phase 16 checklist in the intelligence document."
+
+**Files to Create:**
 
 ```
-╔══════════════════════════════════════════════════════════════════╗
-║  HANDOFF: UI Designer → Plan/Implement Agent                     ║
-╚══════════════════════════════════════════════════════════════════╝
+[feature-name]/
+  index.tsx           — Route/export
+  [Feature].tsx       — Main component
+  components/         — Feature-specific components (if any)
+  hooks/              — Feature-specific hooks (if any)
+```
 
-━━━ STATUS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-COMPLETED
+---
 
-━━━ SELECTED VARIETY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Variety [N] — [Name]
-Reasoning: [one sentence]
+## Post-Design Verification
 
-━━━ COMPONENT TREE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[Full component tree from selected variety]
+Before delivering the design, verify:
 
-━━━ STATE DESIGN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[Full state table from selected variety]
+```
+INTELLIGENCE DOCUMENT ALIGNMENT:
+[ ] All components exist in Phase 3 of the intelligence document
+[ ] Layout matches a pattern in Phase 4
+[ ] Modal type (if any) matches Phase 5
+[ ] Interactions follow patterns in Phase 7
+[ ] Design honours principles in Phase 12
+[ ] No anti-patterns from Phase 11 are introduced
+[ ] New components (if any) follow patterns from Phase 14
 
-━━━ TYPESCRIPT INTERFACES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[All new interfaces needed from selected variety]
+USER VALUE:
+[ ] Primary user task is efficient
+[ ] Edge cases are handled gracefully
+[ ] The design would feel native to existing users
 
-━━━ NEW COMPONENTS REQUIRED ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[Or "None — all composed from existing components"]
-
-━━━ DECISION POINTS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[Every DECISION_POINT made during design — or "None"]
-
-━━━ DATA DEPENDENCIES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[What data the UI needs — API endpoints, types, data shapes]
+PRODUCTION READINESS:
+[ ] All states handled (empty, loading, error, success)
+[ ] Responsive behaviour defined
+[ ] All components properly typed
+[ ] Implementation path is clear
 ```

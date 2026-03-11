@@ -1,8 +1,3 @@
----
-name: ui-scan
-description: One-time codebase scan for UI patterns, components, and design tokens. Run once per project or when UI codebase changes significantly.
----
-
 # UI CODEBASE INTELLIGENCE SCAN
 
 ## STACK: React + TypeScript
@@ -11,9 +6,11 @@ description: One-time codebase scan for UI patterns, components, and design toke
 
 ## Purpose
 
-This is not a design task. This is a pure intelligence gathering task. Run this once per project — or whenever the UI codebase changes significantly. It has no dependency on any specific feature being built.
+This is not a design task. This is a pure intelligence gathering task. Run this once per project — or whenever the UI codebase changes significantly. It has nco dependency on any specific feature being built.
 
 Your job is to become the deepest possible expert on this codebase's design system — with the same depth of knowledge as a designer who has worked on this product for years. You will read, analyse, and document every UI pattern, every component, every design decision that exists in this codebase.
+
+**CRITICAL ADDITION:** You must also capture the **designer's mindset** — the reasoning behind every design decision. Documenting WHAT exists is only half the job. You must also document WHY it exists, WHAT PROBLEMS it solves, and WHAT ALTERNATIVES were not chosen. This enables future AI-assisted design that is intelligent and creative, not just pattern-matching.
 
 The output of this session is a single exhaustive `.md` document — `UI-DESIGN-INTELLIGENCE.md` — that will serve as the complete design bible for all future UI work on this project. Every future UI design will be based entirely on what you discover and document here. The quality of this document directly determines the quality of every UI design that follows.
 
@@ -21,7 +18,7 @@ The output of this session is a single exhaustive `.md` document — `UI-DESIGN-
 
 ---
 
-## OVERRIDE DIRECTIVE — Read This Before Anything Else
+## ⚡ OVERRIDE DIRECTIVE — Read This Before Anything Else
 
 This task overrides your default behaviour around response length, token conservation, and brevity.
 
@@ -69,9 +66,41 @@ This mental rendering process makes your pattern recognition significantly deepe
 
 ## Scanning Instructions
 
-Work through all 10 phases in strict order. Do not skip any phase. Do not rush any phase. Each phase builds the foundation for the next.
+Work through all 16 phases in strict order. Do not skip any phase. Do not rush any phase. Each phase builds the foundation for the next.
+
+**Document Structure:**
+
+```
+## Table of Contents
+
+### Part 1: What Exists (Component Catalog)
+1. Codebase Structure
+2. Design Tokens
+3. Component Catalogue
+
+### Part 2: How It's Organized (Patterns)
+4. Layout Patterns
+5. Modal Patterns
+6. Summary/Card Patterns
+7. Interaction Patterns
+8. Animations & Micro-interactions
+9. Feature UI Compositions
+10. Component Combinations
+11. Anti-Patterns
+
+### Part 3: The Designer's Mindset (WHY)
+12. Design Philosophy — Core Principles
+13. Creative Guidelines — How to Extend
+14. Unique Feature Deep Dive — Reasoning
+
+### Part 4: Implementation (HOW)
+15. Implementation Templates
+16. Final Checklist
+```
 
 ---
+
+## PART 1: WHAT EXISTS
 
 ### PHASE 1 — Codebase Structure Mapping
 
@@ -123,7 +152,7 @@ Every responsive breakpoint with its exact pixel value
 **Icons:**
 Which icon library is used — how icons are imported — every standard size used in the codebase
 
-**Most-used Tailwind classes (if Tailwind is used):**
+**Most-used utility classes (if Tailwind/CSS modules are used):**
 Scan across all files and identify the utility classes that appear most frequently. These form the core visual vocabulary of this product and must be documented — they are what makes new UI feel native.
 
 ---
@@ -195,6 +224,8 @@ Group all components into these categories, and within each category sort alphab
 
 ---
 
+## PART 2: HOW IT'S ORGANIZED
+
 ### PHASE 4 — Layout Pattern Analysis
 
 Read every page and view file in the codebase. For each page/view, produce this full entry:
@@ -230,7 +261,51 @@ After cataloguing all pages, extract and name every recurring layout pattern. Fo
 
 ---
 
-### PHASE 5 — Interaction & Behaviour Pattern Analysis
+### PHASE 5 — Modal/Dialog Pattern Analysis
+
+Identify every type of modal, dialog, drawer, sheet, or overlay used in the codebase.
+
+For each modal type:
+
+**[Modal Type Name]** — e.g. "Centered confirmation dialog", "Right side pane", "FAB-triggered action sheet"
+
+- **Files where used:** [all file paths]
+- **Component used:** [DialogWindow, Modal, Sheet, etc.]
+- **Appearance/Variant:** [exact props that control appearance]
+- **Width/Height:** [exact dimensions]
+- **Position:** [center, left, right, bottom]
+- **When opened:** [what triggers this modal type]
+- **Content pattern:** [what typically goes inside]
+
+**Decision Matrix:**
+Create a table showing when to use which modal type:
+
+| Content Type | Modal Type | Width | Position | Example        |
+| ------------ | ---------- | ----- | -------- | -------------- |
+| Quick info   | rightPane  | 387px | Right    | Entity preview |
+| Create form  | wide       | 848px | Center   | Create account |
+| etc.         |            |       |          |                |
+
+---
+
+### PHASE 6 — Summary/Card Pattern Analysis
+
+If the codebase has summary cards, dashboard cards, or similar data display components:
+
+For each card type:
+
+- **Component:** [file path]
+- **Contexts where used:** [hero, sidebar, dashboard, etc.]
+- **Data displayed:** [what information it shows]
+- **Interactivity:** [clickable, hoverable, static]
+- **Responsive behavior:** [how it adapts]
+
+**Card System Philosophy:**
+Does the codebase use a unified card system? Context-aware cards? Fixed variants? Document the pattern.
+
+---
+
+### PHASE 7 — Interaction & Behaviour Pattern Analysis
 
 Identify and document every recurring interaction pattern across the codebase. For each pattern:
 
@@ -276,11 +351,33 @@ Cover every interaction type present in the codebase. Check for all of the follo
 - Accordion expand / collapse
 - Progress indication (steps, percentage)
 - File upload (if present)
+- Hover-reveal patterns (what appears on hover, what disappears)
+- Copy-to-clipboard patterns
 - Any other pattern found
 
 ---
 
-### PHASE 6 — Feature UI Composition Analysis
+### PHASE 8 — Animation & Micro-interaction Analysis
+
+Document every animation and transition in the codebase:
+
+**Animation Philosophy:**
+
+- What animates in this product?
+- What does NOT animate?
+- What is the purpose of animations here? (functional, decorative, both)
+
+For each animation found:
+
+| Element       | Animation Type  | Duration | Easing  | Trigger      | Purpose          |
+| ------------- | --------------- | -------- | ------- | ------------ | ---------------- |
+| Loader        | rotation        | 0.8s     | linear  | active state | indicate loading |
+| Quick actions | opacity + scale | shortest | default | row hover    | reveal actions   |
+| etc.          |                 |          |         |              |                  |
+
+---
+
+### PHASE 9 — Feature UI Composition Analysis
 
 Read every feature-level UI in the product — every feature module, every feature page, every feature component. For each feature:
 
@@ -323,7 +420,7 @@ What is well-executed in this feature's UI design? Be specific — cite exact co
 
 ---
 
-### PHASE 7 — Component Combination Intelligence
+### PHASE 10 — Component Combination Intelligence
 
 Analyse how components are combined to create meaningful, complex UI sections. This is one of the most valuable phases — it captures the compositional intelligence of this codebase.
 
@@ -373,7 +470,7 @@ Cover every meaningful composition found, including:
 
 ---
 
-### PHASE 8 — Anti-Pattern Documentation
+### PHASE 11 — Anti-Pattern Documentation
 
 Document what this codebase deliberately does NOT do. These absent patterns are as important as what it does — they define the design boundaries and prevent future work from introducing foreign elements.
 
@@ -405,61 +502,254 @@ Search specifically for these and document each as present or absent:
 - Horizontal scrolling areas
 - Complex data visualisation / charts
 - Rich text editors
+- Entrance animations
+- Page transition animations
+- Inline error banners (vs toast)
+- Real-time validation (vs on-submit)
+- Global action toolbars
 - Any other pattern worth noting as absent
+
+**Styling Anti-Patterns:**
+Document styling approaches that are NOT used:
+
+| Anti-Pattern      | What the Codebase Does Instead |
+| ----------------- | ------------------------------ |
+| Inline hex colors | `palette.*` tokens             |
+| Arbitrary spacing | `spacing(n)` from theme        |
+| etc.              |                                |
 
 ---
 
-### PHASE 9 — Designer Mindset Synthesis
+## PART 3: THE DESIGNER'S MINDSET (WHY)
+
+**This is the most critical part of the document.** Parts 1 and 2 document WHAT exists. Part 3 documents WHY it exists — the reasoning, the trade-offs, the philosophy. Without this, future designs will merely copy patterns without understanding them.
+
+### PHASE 12 — Design Philosophy Synthesis
 
 After completing all previous phases, synthesise everything you have observed into the set of design principles that govern this product. These are discovered principles — derived from evidence — not invented ones.
 
-For each principle:
+**For each principle, use this format:**
 
 ---
 
-**[Principle Name]** — e.g. "Actions are always anchored to the content they affect"
+**Principle [N]: "[Principle Name]"**
 
-- **Evidence:** `[specific file paths and exact UI patterns that demonstrate this principle]`
-- **Anti-evidence (if any):** [any exceptions — and why they are exceptions]
-- **Implication for new designs:** [what a new design must do, or must not do, to honour this principle]
+> _Designer's reasoning:_ "[Write a 2-3 sentence quote that captures WHY this principle exists, written as if the original designer were explaining their thinking. Base this on evidence from the codebase.]"
 
----
+**Evidence:**
 
-Cover every dimension of the design philosophy:
+- [specific file paths and exact UI patterns that demonstrate this principle]
 
-- **Visual hierarchy** — how importance and priority are communicated to the user's eye
-- **Information density** — how much information is shown at once vs hidden behind interaction
-- **Primary action placement** — where the most important action consistently lives
-- **Secondary action placement** — where supporting, reversible, or destructive actions live
-- **Feedback philosophy** — how the product communicates success, failure, progress, and status to the user
-- **Progressive disclosure** — what is shown by default vs revealed on interaction
-- **Typography hierarchy** — how text weight, size, and colour create reading structure
-- **Colour communication** — what each colour in the system signals to the user and when
-- **Spacing philosophy** — the rhythm of breathing room — what the spacing choices communicate
-- **Empty state philosophy** — how the product handles zero-data moments — is it instructional, neutral, encouraging?
-- **Error philosophy** — how errors are surfaced, explained, and recovered from
-- **Loading philosophy** — how the product handles waiting — skeleton, spinner, optimistic — and why
-- **Destructive action philosophy** — how permanent or risky actions are guarded
-- **Component reuse culture** — how aggressively the codebase composes from existing primitives vs creates new components
-- **Motion philosophy** — what moves, what doesn't, and what the motion communicates
+**Anti-evidence (if any):**
+
+- [any exceptions — and why they are exceptions]
+
+**Implication for new designs:**
+
+- What a new design MUST do to honour this principle
+- What a new design must NOT do
 
 ---
 
-### PHASE 10 — Final Completeness Pass
+**Extract principles for EVERY dimension:**
 
-Before producing the output document, make one final pass across the entire codebase.
+1. **Data vs Decoration** — How much of the UI is data vs aesthetics?
+2. **Information Hierarchy** — How is importance communicated?
+3. **Progressive Disclosure** — What's shown by default vs on interaction?
+4. **Action Placement** — Where do primary and secondary actions live?
+5. **Feedback Philosophy** — How does the product communicate status?
+6. **Consistency vs Creativity** — When is consistency prioritised?
+7. **Density Philosophy** — How dense is the information?
+8. **Navigation Philosophy** — How do users move through the product?
+9. **Modal Philosophy** — When are modals vs pages used?
+10. **Animation Philosophy** — What role does motion play?
+11. **Color Communication** — What does each color signal?
+12. **Typography Hierarchy** — How does text create structure?
+13. **Spacing Rhythm** — What does spacing communicate?
+14. **Component Reuse** — How aggressively are components reused?
+15. **Error Philosophy** — How are errors surfaced?
+16. **Loading Philosophy** — How is waiting handled?
+17. **Empty State Philosophy** — How are zero-data moments handled?
 
-Ask yourself:
+---
 
-- Is there any component file I have not read?
-- Is there any page or view I have not documented?
-- Is there any feature whose UI I have not analysed?
-- Is there any directory I glossed over?
-- Are there any component usages I documented as "and others" instead of listing them all?
-- Are there any prop interfaces I abbreviated?
-- Are there any token values I approximated instead of copying exactly?
+### PHASE 13 — Creative Extension Guidelines
 
-For every "yes" answer — go back and complete it before proceeding.
+Document how the design system should be extended when new features require new patterns.
+
+**Decision Framework:**
+Provide a numbered decision process for when building new features:
+
+1. What existing feature is this most similar to?
+2. What is the information hierarchy?
+3. Is this a list view or a detail view?
+4. Where do actions live?
+5. How does the user navigate?
+6. What are the states? (empty, loading, error, success)
+
+**Common Mistakes to Avoid:**
+Create a table:
+
+| Mistake            | Why It's Wrong           | What to Do Instead   |
+| ------------------ | ------------------------ | -------------------- |
+| Adding a new color | Dilutes color vocabulary | Use existing palette |
+| etc.               |                          |                      |
+
+**The Product Look — Summary:**
+Write two sections:
+
+**What makes UI look like THIS PRODUCT:**
+
+1. [specific visual trait]
+2. [specific visual trait]
+   ... (10+ traits)
+
+**What makes UI look NOT like THIS PRODUCT:**
+
+1. [specific anti-trait]
+2. [specific anti-trait]
+   ... (10+ traits)
+
+---
+
+### PHASE 14 — Unique Feature Deep Dive
+
+For every unique/distinctive UI feature in the codebase (features that show strong design thinking, not generic patterns), create a detailed reasoning analysis:
+
+---
+
+**[Unique Feature Name]**
+
+**The Feature:**
+[Brief description of what it is]
+
+**Where:**
+[File paths]
+
+**The Problem It Solves:**
+[What user/UX problem does this solve?]
+
+**Why This Approach?**
+
+> _Designer's reasoning:_ "[2-4 sentences written as if the original designer were explaining why they chose this approach over alternatives]"
+
+**Alternatives NOT Taken:**
+| Alternative | Why It Was Rejected |
+|-------------|-------------------|
+| [approach 1] | [why not] |
+| [approach 2] | [why not] |
+
+**Trade-offs Accepted:**
+
+- [what this approach gives up]
+- [why that trade-off is acceptable]
+
+**When Creating Similar Features:**
+
+- [guidance for applying this pattern elsewhere]
+- [when this pattern should NOT be used]
+
+---
+
+Analyze at minimum:
+
+- Any context-aware component systems
+- Any scroll-based UI effects
+- Any novel positioning patterns
+- Any hover-reveal strategies
+- Any side pane vs page navigation patterns
+- Any collapsible/expandable patterns
+- Any container query usage
+- Any other distinctive pattern
+
+---
+
+## PART 4: IMPLEMENTATION
+
+### PHASE 15 — Implementation Templates
+
+Create ready-to-use code templates for the most common UI tasks in this codebase.
+
+**Template for: New List Page**
+
+```tsx
+// [Full component template with comments]
+```
+
+**Template for: New Detail Page**
+
+```tsx
+// [Full component template with comments]
+```
+
+**Template for: New Modal/Dialog**
+
+```tsx
+// [Full component template with comments]
+```
+
+**Template for: New Summary Card**
+
+```tsx
+// [Full component template with comments]
+```
+
+**Template for: New FAB/Action Button**
+
+```tsx
+// [Full component template with comments]
+```
+
+**Template for: New Form**
+
+```tsx
+// [Full component template with comments]
+```
+
+Add templates for every common pattern found in the codebase.
+
+---
+
+### PHASE 16 — Final Checklist
+
+Create a verification checklist for new UI:
+
+**Visual Consistency:**
+
+- [ ] Uses only `palette.*` colors (no hex values)
+- [ ] Uses only `spacing(n)` (no arbitrary pixels)
+- [ ] Uses only typography variants (no custom font sizes)
+- [ ] Uses only theme shadows (no custom shadows)
+- [ ] Uses correct border radius
+- [ ] Brand colors only for specified purposes
+
+**Component Usage:**
+
+- [ ] Uses existing components where possible
+- [ ] Modal appearance matches content complexity
+- [ ] Cards use the card system correctly
+- [ ] Tables use standard cell components
+- [ ] Forms use form system correctly
+
+**Interaction Patterns:**
+
+- [ ] [Pattern 1 specific to this codebase]
+- [ ] [Pattern 2 specific to this codebase]
+- [ ] Feedback uses correct mechanism (toast, etc.)
+- [ ] Loading states are correct
+- [ ] Actions are placed correctly
+
+**Information Hierarchy:**
+
+- [ ] Primary data visible immediately
+- [ ] Secondary info on hover/expand
+- [ ] Deep detail on click/navigate
+- [ ] Empty states handled
+
+**Navigation:**
+
+- [ ] Correct modal vs page vs pane choice
+- [ ] Consistent trigger patterns
 
 ---
 
@@ -467,7 +757,7 @@ For every "yes" answer — go back and complete it before proceeding.
 
 Save the output as `UI-DESIGN-INTELLIGENCE.md` at the project root (or in `docs/` if that directory exists).
 
-Structure the document with all 10 phases as top-level sections, using the formats specified in each phase.
+Structure the document with all 16 phases organized into the 4 parts as specified above.
 
 ### Depth and Length Requirements
 
@@ -475,6 +765,8 @@ Structure the document with all 10 phases as top-level sections, using the forma
 - Every component gets its full entry — all props, all variants, all states, all usages.
 - Every page gets its full entry.
 - Every pattern gets its full entry.
+- Every design principle includes the designer's reasoning in quotes.
+- Every unique feature includes the alternatives not taken.
 - If a component has 12 variants and 23 usages — document all 12 variants and all 23 usages.
 - If a pattern appears in 8 files — cite all 8 files.
 - Do not write "see above for format" — repeat the format for every entry.
@@ -487,6 +779,7 @@ Structure the document with all 10 phases as top-level sections, using the forma
 - Every class name must be copied exactly — no approximation.
 - Every file path must be the exact path — no guessing.
 - Every token value must be the exact value from the config file.
+- Every designer reasoning must be inferred from evidence, not invented.
 
 ---
 
@@ -495,28 +788,57 @@ Structure the document with all 10 phases as top-level sections, using the forma
 After producing the document, answer every question below honestly. If any answer is No — go back, complete what is missing, and update the document. Repeat this gate until every answer is Yes.
 
 ```
-COMPLETENESS CHECK:
+PART 1 — WHAT EXISTS:
 [ ] Have I read every component file in the codebase? (not "most" — every one)
 [ ] Have I read every page and view file?
 [ ] Have I read the full styling configuration?
 [ ] Have I read the third-party library configuration and customisation?
 [ ] Is every component documented with its complete, unabbreviated TypeScript props interface?
 [ ] Is every component documented with every single usage — no truncation?
+
+PART 2 — HOW IT'S ORGANIZED:
 [ ] Have I documented every layout pattern found?
+[ ] Have I documented every modal/dialog type?
 [ ] Have I documented every interaction pattern found?
 [ ] Have I documented every feature's UI composition?
 [ ] Have I documented every component combination pattern?
 [ ] Have I documented every anti-pattern?
 [ ] Have I cited real file paths for every single claim?
-[ ] Is there any directory I did not read?
-[ ] Is there any component I did not document?
+
+PART 3 — DESIGNER'S MINDSET:
+[ ] Have I written designer reasoning for every design principle?
+[ ] Have I documented WHY for every unique feature, not just WHAT?
+[ ] Have I documented alternatives not taken for distinctive patterns?
+[ ] Have I created decision frameworks for extending the design?
+[ ] Have I documented what makes UI look like this product and what doesn't?
+
+PART 4 — IMPLEMENTATION:
+[ ] Have I created implementation templates for common patterns?
+[ ] Have I created a final checklist specific to this codebase?
+[ ] Are the templates complete and ready to use?
 
 CONFIDENCE QUESTION:
-Am I 100% confident that this document covers every design pattern, every component,
-every layout, every interaction, and every design principle in this codebase —
-and that a designer reading only this document would have complete knowledge of
-the product's design system without needing to look at a single file?
+Am I 100% confident that this document:
+1. Covers every design pattern, component, layout, and interaction?
+2. Explains WHY each pattern exists, not just WHAT it is?
+3. Enables someone to create NEW features that feel native to this product?
+4. Enables CREATIVE extension that stays true to the design philosophy?
 
 If the answer is anything less than YES — go back and iterate.
 Do not finalise the document until the answer is an unqualified YES.
+```
+
+---
+
+## Document Version Info
+
+At the end of the document, include:
+
+```
+---
+**Document Version:** 1.0
+**Generated:** [date]
+**Codebase Snapshot:** [git commit hash if available]
+**Purpose:** Enable creation of production-ready UI that is native to this design system
+**Next Scan:** Run again when the codebase changes significantly
 ```
