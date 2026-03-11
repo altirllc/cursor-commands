@@ -28,9 +28,10 @@ if [[ ! -d "$WORKTREE_PATH" ]]; then
 fi
 
 # Find main repo root for .env.github (worktrees have .git as file, main repo has .git as dir)
+# For worktrees: GIT_DIR = main-repo/.git/worktrees/<name> → project root = main-repo (parent of .git)
 if [[ -f "$WORKTREE_PATH/.git" ]]; then
   GIT_DIR=$(cd "$WORKTREE_PATH" && sed 's/gitdir: //' .git | tr -d ' \n')
-  PROJECT_ROOT=$(dirname "$(dirname "$GIT_DIR")")
+  PROJECT_ROOT=$(dirname "$(dirname "$(dirname "$GIT_DIR")")")
 else
   PROJECT_ROOT="$WORKTREE_PATH"
 fi

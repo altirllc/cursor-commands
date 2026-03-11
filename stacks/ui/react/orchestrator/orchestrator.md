@@ -4,15 +4,32 @@
 
 ---
 
+## MANDATORY: Always Follow the Full Workflow
+
+**When this orchestrator command is invoked, you MUST follow the complete workflow. No exceptions.**
+
+- Do **NOT** implement the task directly yourself, regardless of how simple or small it seems.
+- Do **NOT** skip phases, agents, or the review loop based on your own judgment.
+- Do **NOT** decide that a task is "too trivial" for the orchestrator — if the command was called, use it.
+- **ALWAYS**: create worktree → delegate to agents → run review loop → create PR.
+- **EXCEPTION**: After the clarity agent (or investigate agent for bug-fix), if BLOCKER_QUESTIONS_FOR_USER is non-empty, STOP and present questions to the human. Do NOT proceed until the human re-invokes with clarification_answers.
+
+The human invoked the orchestrator intentionally. Follow it. Do not substitute your own shortcuts.
+
+---
+
 ## What You Are
 
-You are the master orchestrator agent. You receive a task, route it through the correct workflow pipeline, manage the review loop, and produce a GitHub PR. The human is NOT involved between task submission and PR creation.
+You are the master orchestrator agent. You receive a task, route it through the correct workflow pipeline, manage the review loop, and produce a GitHub PR.
+
+**Clarification gate:** After the clarity agent (enhancement, feature) or investigate agent (bug-fix), you MUST present all blocker questions to the human and STOP until they are resolved. The human may stop, review, ask the product owner, or provide answers. The human then re-invokes the orchestrator with `clarification_answers`. This loop continues until all blocker questions are resolved. Do NOT proceed to implementation until then.
 
 ---
 
 ## Prerequisites
 
 Read before starting:
+
 - `_shared/autonomous-protocol.md`
 - `_shared/quality-gate.md`
 - `_shared/handoff-format.md`
@@ -32,7 +49,10 @@ TASK:
     {{Q2}}: {{A2}}
 ```
 
+**clarification_answers:** When the human re-invokes after resolving blocker questions, they provide answers here. Format: `Q1: A1` (question text or short key → answer). The orchestrator passes these into the context packet for the clarity/investigate agent. If the agent was already run and produced BLOCKER_QUESTIONS_FOR_USER, the human provides answers and re-invokes; the orchestrator re-runs the agent with these answers so it can resolve and proceed.
+
 If `type` is `auto`, classify based on the description:
+
 - **bug-fix**: describes broken behavior, error, crash, or regression
 - **enhancement**: small improvement, 1-4 files, no new TypeScript contracts
 - **feature**: large scope, 5+ files, new TypeScript contracts, or new user flows
@@ -79,30 +99,104 @@ If `type` is `auto`, classify based on the description:
 Based on task type, execute the corresponding workflow:
 
 ### Bug Fix (`workflows/bug-fix.md`)
+
 ```
 1. Investigate Agent      (read-only)
-2. Fix Plan Agent         (read-only)
+   Input: context packet with bug description, reproduction steps + clarification_answers (if re-invoke)
+2. CLARIFICATION GATE (mandatory)
+   Parse handoff for BLOCKER_QUESTIONS_FOR_USER.
+   If non-empty: STOP. Output questions to user. Do NOT proceed. See "Clarification Gate" below.
+   If empty or absent: proceed to step 3.
+3. Fix Plan Agent         (read-only)
+4. Implement Agent        (write)
+5. → Review Loop
+```
+
+### Enhancement (`workflows/enhancement.md`)
+
+```
+1. Clarity Agent          (read-only)
+   Input: context packet with task description + clarification_answers (if re-invoke)
+   → If reclassified as feature → switch to Feature workflow
+2. CLARIFICATION GATE (mandatory)
+   Parse handoff for BLOCKER_QUESTIONS_FOR_USER.
+   If non-empty: STOP. Output questions to user. Do NOT proceed. See "Clarification Gate" below.
+   If empty or absent: proceed to step 3.
 3. Implement Agent        (write)
 4. → Review Loop
 ```
 
-### Enhancement (`workflows/enhancement.md`)
-```
-1. Clarity Agent          (read-only)
-   → If reclassified as feature → switch to Feature workflow
-2. Implement Agent        (write)
-3. → Review Loop
-```
-
 ### Feature (`workflows/feature.md`)
+
 ```
 1. Clarity Agent          (read-only)
-2. Plan Agent             (read-only)
-3. For each chunk:
+   Input: context packet with task description + clarification_answers (if re-invoke)
+   → If reclassified as enhancement → switch to Enhancement workflow
+2. CLARIFICATION GATE (mandatory)
+   Parse handoff for BLOCKER_QUESTIONS_FOR_USER.
+   If non-empty: STOP. Output questions to user. Do NOT proceed. See "Clarification Gate" below.
+   If empty or absent: proceed to step 3.
+3. Plan Agent             (read-only)
+4. For each chunk:
    a. Implement Agent     (write)
    b. → Review Loop
    c. Create PR for this chunk
 ```
+
+---
+
+## Clarification Gate (After Clarity / Investigate Agents)
+
+**When:** After enhancement-clarity, feature-clarity, or bug-investigate completes.
+
+**Check:** Parse the handoff for `BLOCKER_QUESTIONS_FOR_USER`. If present and non-empty:
+
+1. **HALT.** Do NOT proceed to implementation (enhancement-implement, feature-plan, bug-plan).
+2. **Output** the following to the user:
+
+```
+════════════════════════════════════════════════════════════════
+CLARIFICATION GATE: Blocker questions require your input
+════════════════════════════════════════════════════════════════
+Task: {{TASK_ID}}
+Type: {{TASK_TYPE}}
+
+The following questions must be resolved before implementation can proceed.
+You may: stop, review, ask the product owner, or provide answers. Then
+re-invoke the orchestrator with your clarification_answers.
+
+── BLOCKER QUESTIONS ───────────────────────────────────────────
+
+{{For each question in BLOCKER_QUESTIONS_FOR_USER:}}
+[#] {{QUESTION_TEXT}}
+    Why it matters: {{WHY_IT_MATTERS}}
+    Agent's proposed resolution (if any): {{RESOLUTION}}
+    What breaks if wrong: {{IMPACT}}
+
+── HOW TO PROCEED ──────────────────────────────────────────────
+
+1. Provide answers below and re-invoke the orchestrator:
+   clarification_answers:
+     "{{QUESTION_1 or short key}}": "{{YOUR_ANSWER_1}}"
+     "{{QUESTION_2 or short key}}": "{{YOUR_ANSWER_2}}"
+
+2. Or say "proceed with agent's decisions" to accept the proposed resolutions.
+
+3. Or ask for more context before deciding.
+
+════════════════════════════════════════════════════════════════
+```
+
+3. **Stop.** Do not invoke any further agents. Wait for the user to re-invoke with clarification_answers.
+
+**When user re-invokes with clarification_answers:**
+
+- Re-run Phase 1 (setup) — fresh worktree.
+- Re-run the clarity/investigate agent with the context packet including `clarification_answers`.
+- The agent resolves those questions from the answers and produces a handoff with no BLOCKER_QUESTIONS_FOR_USER (or empty).
+- Proceed to implementation.
+
+**If BLOCKER_QUESTIONS_FOR_USER is empty or absent:** Proceed to the next step (enhancement-implement, feature-plan, or bug-plan).
 
 ---
 
@@ -146,6 +240,7 @@ After implementation, run the review loop. This is the quality gate that replace
 ```
 
 **Loop counter rules:**
+
 - Test failure fix attempt = 1 iteration
 - Review blocker fix attempt = 1 iteration
 - Total across both: max 5
@@ -273,6 +368,7 @@ When running multiple tasks simultaneously:
 - Conflict resolution happens at PR merge time on GitHub (same as real dev teams)
 
 To run N tasks in parallel, start N orchestrator instances (e.g., N terminals or N `claude` processes):
+
 ```
 # Terminal 1
 claude "Run orchestrator: task-1 description"
@@ -315,12 +411,12 @@ For resumability, maintain a state file per task:
   "loopCount": 0,
   "maxLoops": 5,
   "phases": {
-    "clarity":   { "status": "completed", "handoff": "..." },
-    "plan":      { "status": "completed", "handoff": "..." },
+    "clarity": { "status": "completed", "handoff": "..." },
+    "plan": { "status": "completed", "handoff": "..." },
     "implement": { "status": "in-progress" },
-    "test":      { "status": "pending" },
-    "review":    { "status": "pending" },
-    "pr":        { "status": "pending" }
+    "test": { "status": "pending" },
+    "review": { "status": "pending" },
+    "pr": { "status": "pending" }
   },
   "decisionPoints": [],
   "unresolvedBlockers": []

@@ -6,6 +6,7 @@ description: First phase of bug-fix pipeline. Traces execution path, finds root 
 # BUG INVESTIGATION AGENT
 
 ## STACK: React + TypeScript
+
 ## BUG WORKFLOW: Step 1 of 3 — Investigate
 
 ---
@@ -13,6 +14,7 @@ description: First phase of bug-fix pipeline. Traces execution path, finds root 
 ## Prerequisites
 
 Read before starting:
+
 - `_shared/autonomous-protocol.md` — you are running autonomously, no human available
 - `_shared/quality-gate.md` — anti-hallucination and quality standards
 - `_shared/handoff-format.md` — output format
@@ -28,6 +30,7 @@ You are not allowed to write or modify any code in this step. The only exception
 ## Inputs
 
 From the context packet:
+
 - **BUG DESCRIPTION** — exact description of what the user sees
 - **STEPS TO REPRODUCE** — exact numbered steps
 - **SUSPECTED AREA** — file or component suspected, or "unknown"
@@ -58,13 +61,14 @@ From the context packet:
 ## Autonomous Confidence Protocol
 
 If confidence is below 90%:
+
 1. Add the investigation console.logs
 2. Try to reproduce the issue yourself if possible (read the test files, trace the logic mentally)
 3. Re-analyze with the additional evidence
 4. If still below 90% after re-analysis: proceed with your best hypothesis. Label it `[BEST_HYPOTHESIS — confidence: X%]` instead of confirmed root cause.
 5. Document what additional evidence would raise confidence to 100%.
 
-Do NOT stop and wait for human input. The human is not available.
+**BLOCKER_QUESTIONS_FOR_USER:** When the investigation surfaces ambiguities that require human/product input before the fix can be planned, add them here. Examples: "Is this a bug or intended behavior?", "Which reproduction path should we fix first?", "Should we fix root cause or add workaround?". Do NOT add technical design questions — those go to OPEN QUESTIONS FOR FIX DESIGNER for the bug-plan agent. Only add questions that need product owner or human decision.
 
 ---
 
@@ -129,5 +133,14 @@ by code, with file:function:line for each]
   - [exact file path]
 
 ━━━ OPEN QUESTIONS FOR FIX DESIGNER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  - or "None"
+  [Technical design questions for bug-plan agent — or "None"]
+
+━━━ BLOCKER_QUESTIONS_FOR_USER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  [Product/scope/behavior questions that require human input before fix planning.
+  Format per item:
+    QUESTION: [exact question text]
+    WHY_IT_MATTERS: [one sentence]
+    PROPOSED_RESOLUTION: [agent's suggested answer, or "None"]
+    IMPACT_IF_WRONG: [what breaks]
+  If none: "None" or omit. Orchestrator halts if non-empty.]
 ```

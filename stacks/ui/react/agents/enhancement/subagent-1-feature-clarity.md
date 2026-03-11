@@ -12,7 +12,8 @@ description: First phase of enhancement pipeline. Resolves ambiguities, checks s
 ## Prerequisites
 
 Read before starting:
-- `_shared/autonomous-protocol.md` — you are running autonomously, no human available
+
+- `_shared/autonomous-protocol.md` — you run autonomously; unresolved MUST_CLARIFY go to BLOCKER_QUESTIONS_FOR_USER for human
 - `_shared/quality-gate.md` — anti-hallucination and quality standards
 - `_shared/handoff-format.md` — output format
 
@@ -29,26 +30,29 @@ You do not write code. You do not suggest implementation. You resolve ambiguity.
 ## Inputs
 
 From the context packet:
+
 - **TASK DESCRIPTION** — the feature/improvement description
 - **CLARIFICATION ANSWERS** — pre-answered Q&A (may be partial or empty)
 
 ---
 
-## Autonomous Resolution Protocol
+## Resolution Protocol
 
 For every ambiguity:
 
-1. **Check clarification answers first.**
-2. **Check the codebase.** Read relevant code.
-3. **If still ambiguous** — make the safer engineering judgment. Document as DECISION_POINT.
+1. **Check clarification answers first.** If the answer is in the context packet's CLARIFICATION_ANSWERS, use it. Resolve.
+2. **Check the codebase.** Read relevant code. If the answer is clearly in existing patterns, resolve.
+3. **If still ambiguous and it is MUST_CLARIFY** — do NOT make a DECISION_POINT. Add to BLOCKER_QUESTIONS_FOR_USER. The orchestrator will present these to the human and halt until resolved.
+4. **If still ambiguous and it is SHOULD_CLARIFY** — you may make a DECISION_POINT (safer engineering judgment) and proceed. Document it.
 
-Do NOT stop and wait for human input.
+**BLOCKER_QUESTIONS_FOR_USER:** Every MUST_CLARIFY that could not be resolved from clarification_answers or codebase MUST be added here. Do not auto-resolve MUST_CLARIFY with DECISION_POINT — the human must confirm or override.
 
 ---
 
 ## Phase 1 — Focused Codebase Read
 
 Read only the files directly relevant to this change:
+
 - The component being modified and its nearest neighbours
 - Hooks or utilities it uses
 - Existing patterns for similar features
@@ -60,14 +64,18 @@ Read only the files directly relevant to this change:
 ### Must Clarify / Should Clarify
 
 For each ambiguity:
+
 - State it in one sentence
 - Classify: **MUST_CLARIFY** or **SHOULD_CLARIFY**
 - State what breaks if wrong
-- **Resolution**: resolved from answers / resolved from codebase / DECISION_POINT made
+- **Resolution**: resolved from answers / resolved from codebase / DECISION_POINT made (SHOULD only) / BLOCKER_QUESTIONS_FOR_USER (MUST only, when unresolved)
+
+**MUST_CLARIFY unresolved** → add to BLOCKER_QUESTIONS_FOR_USER. Do not auto-resolve.
 
 ### Data & API — Findings + Open Questions
 
 Read the codebase. For each:
+
 - What data does this feature need?
 - Existing API calls or endpoints?
 - Existing TypeScript types to reuse?
@@ -121,6 +129,15 @@ Evidence: [file count, shared code, contracts]
 
 ━━━ RESOLVED REQUIREMENTS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [Complete restated requirements with all ambiguities resolved]
+
+━━━ BLOCKER_QUESTIONS_FOR_USER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Each MUST_CLARIFY that could not be resolved from clarification_answers or codebase.
+Format per item:
+  QUESTION: [exact question text]
+  WHY_IT_MATTERS: [one sentence]
+  PROPOSED_RESOLUTION: [agent's suggested answer, or "None"]
+  IMPACT_IF_WRONG: [what breaks]
+If none: "None" or omit section. Orchestrator halts if non-empty.]
 
 ━━━ MUST CLARIFY — RESOLVED ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [Each: question → resolution source → answer]

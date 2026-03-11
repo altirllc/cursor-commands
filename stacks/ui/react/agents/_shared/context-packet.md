@@ -21,6 +21,9 @@ TIMESTAMP: {{TIMESTAMP}}
 {{CLARIFICATION_QA}}
 (or "None — task was fully specified")
 
+When the human re-invokes after the Clarification Gate, they provide answers here.
+Format: Q: A pairs. Clarity subagents MUST resolve BLOCKER_QUESTIONS from these before proceeding.
+
 ── PREVIOUS PHASE OUTPUT ────────────────────────────────────────
 {{PREVIOUS_PHASE_HANDOFF_BLOCK}}
 (or "None — this is the first phase")

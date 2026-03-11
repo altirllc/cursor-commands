@@ -12,7 +12,8 @@ description: First phase of feature pipeline. Resolves ambiguities, investigates
 ## Prerequisites
 
 Read before starting:
-- `_shared/autonomous-protocol.md` — you are running autonomously, no human available
+
+- `_shared/autonomous-protocol.md` — you run autonomously; unresolved MUST_CLARIFY go to BLOCKER_QUESTIONS_FOR_USER for human
 - `_shared/quality-gate.md` — anti-hallucination and quality standards
 - `_shared/handoff-format.md` — output format
 
@@ -29,18 +30,20 @@ You do not write code. You do not suggest implementation. You resolve ambiguity.
 ## Inputs
 
 From the context packet:
+
 - **TASK DESCRIPTION** — the full feature description
 - **CLARIFICATION ANSWERS** — pre-answered Q&A (may be partial or empty)
 
 ---
 
-## Autonomous Resolution Protocol
+## Resolution Protocol
 
 For every ambiguity you find:
 
-1. **Check clarification answers first.** If the answer is there, resolve it.
-2. **Check the codebase.** Read relevant code — the answer may be in existing patterns.
-3. **If still ambiguous** — make the safer engineering judgment. Document as DECISION_POINT:
+1. **Check clarification answers first.** If the answer is in the context packet's CLARIFICATION_ANSWERS, use it. Resolve.
+2. **Check the codebase.** Read relevant code — the answer may be in existing patterns. Resolve if clear.
+3. **If still ambiguous and it is MUST_CLARIFY** — do NOT make a DECISION_POINT. Add to BLOCKER_QUESTIONS_FOR_USER. The orchestrator will present these to the human and halt until resolved.
+4. **If still ambiguous and it is SHOULD_CLARIFY** — make the safer engineering judgment. Document as DECISION_POINT:
    ```
    DECISION_POINT:
      Question: [the ambiguity]
@@ -50,7 +53,7 @@ For every ambiguity you find:
      Reversible: [yes/no]
    ```
 
-Do NOT stop and wait for human input. The human is not available.
+**BLOCKER_QUESTIONS_FOR_USER:** Every MUST_CLARIFY that could not be resolved from clarification_answers or codebase MUST be added here. Do not auto-resolve MUST_CLARIFY with DECISION_POINT — the human must confirm or override.
 
 ---
 
@@ -59,6 +62,7 @@ Do NOT stop and wait for human input. The human is not available.
 Before surfacing any questions, read the codebase. Most ambiguities resolve themselves when you see how the existing code works.
 
 Read:
+
 - Components in the feature area
 - Existing patterns for similar features
 - API calls and data types relevant to this feature
@@ -78,11 +82,14 @@ List every assumption buried in the requirement. For each:
   - **MUST_CLARIFY** — wrong assumption causes a bug, breaking change, or full rework
   - **SHOULD_CLARIFY** — wrong assumption causes a minor inconsistency
 - State what breaks if the assumption is wrong
-- **Resolution**: resolved from answers / resolved from codebase / DECISION_POINT made
+- **Resolution**: resolved from answers / resolved from codebase / DECISION_POINT made (SHOULD only) / BLOCKER_QUESTIONS_FOR_USER (MUST only, when unresolved)
+
+**MUST_CLARIFY unresolved** → add to BLOCKER_QUESTIONS_FOR_USER. Do not auto-resolve.
 
 ### Acceptance Criteria Gaps
 
 Read every acceptance criterion. Flag any that are:
+
 - Contradictory — two criteria that cannot both be true
 - Unmeasurable — no way to objectively verify
 - Incomplete — a scenario is implied but not specified
@@ -91,6 +98,7 @@ Read every acceptance criterion. Flag any that are:
 ### Data & API — Findings + Open Questions
 
 Read the codebase first. For each:
+
 - What data does this feature need and where does it come from?
 - Are the required API endpoints built? Are there existing TypeScript types?
 - Is the full API response shape known?
@@ -100,6 +108,7 @@ State what you found, then flag what is unresolved. Unresolved items get DECISIO
 ### Performance & Scale — Findings + Open Questions
 
 Read existing patterns. Assess:
+
 - Does this feature involve large datasets?
 - What do existing pagination/virtualization/caching patterns suggest?
 - Flag anything that needs a decision.
@@ -107,6 +116,7 @@ Read existing patterns. Assess:
 ### React + TypeScript — Findings + Open Questions
 
 Read nearby components. For each:
+
 - Where should state live? What does the existing pattern suggest?
 - Prop drilling risk?
 - Re-render risks?
@@ -151,6 +161,15 @@ Evidence: [file count, shared code impact, TypeScript contract needs]
 ━━━ RESOLVED REQUIREMENTS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [Complete restated requirements with all ambiguities resolved.
 This is the spec the plan agent works from.]
+
+━━━ BLOCKER_QUESTIONS_FOR_USER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Each MUST_CLARIFY that could not be resolved from clarification_answers or codebase.
+Format per item:
+  QUESTION: [exact question text]
+  WHY_IT_MATTERS: [one sentence]
+  PROPOSED_RESOLUTION: [agent's suggested answer, or "None"]
+  IMPACT_IF_WRONG: [what breaks]
+If none: "None" or omit section. Orchestrator halts if non-empty.]
 
 ━━━ MUST CLARIFY — RESOLVED ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [Each item: question → resolution source → answer]
