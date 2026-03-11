@@ -9,7 +9,7 @@
 # Usage:
 #   bash scripts/setup-github-remote.sh "$WORKTREE_PATH"
 #
-# Required: .env.github with GITHUB_APP_ID, GITHUB_APP_INSTALLATION_ID, GITHUB_APP_PRIVATE_KEY
+# Required: .env.github with GITHUB_APP_ID, GITHUB_APP_INSTALLATION_ID, GITHUB_APP_PRIVATE_KEY, GITHUB_REPO_URL
 
 set -euo pipefail
 
@@ -43,14 +43,27 @@ if [[ -z "$ORIGINAL_REMOTE" ]]; then
   exit 1
 fi
 
-# Parse org/repo using sed (no BASH_REMATCH - works across shell invocations)
-ORG_REPO=$(echo "$ORIGINAL_REMOTE" | sed -n 's|.*github\.com[:/]\([^/][^/]*\)/\([^/.]*\).*|\1 \2|p')
+# Load .env.github and require GITHUB_REPO_URL (no fallback to git remote parsing)
+if [[ ! -f "$PROJECT_ROOT/.env.github" ]]; then
+  echo "Error: .env.github not found at $PROJECT_ROOT/.env.github" >&2
+  exit 1
+fi
+set -a
+# shellcheck source=/dev/null
+source "$PROJECT_ROOT/.env.github"
+set +a
+
+if [[ -z "${GITHUB_REPO_URL:-}" ]]; then
+  echo "Error: GITHUB_REPO_URL is required in .env.github (e.g. https://github.com/org/repo.git)" >&2
+  exit 1
+fi
+
+ORG_REPO=$(echo "$GITHUB_REPO_URL" | sed -n 's|.*github\.com[:/]\([^/][^/]*\)/\([^/.]*\).*|\1 \2|p')
 ORG=$(echo "$ORG_REPO" | cut -d' ' -f1)
 REPO=$(echo "$ORG_REPO" | cut -d' ' -f2)
 
-# Validate before any mutation
 if [[ -z "$ORG" || -z "$REPO" ]]; then
-  echo "Error: Could not parse org/repo from remote URL: $ORIGINAL_REMOTE" >&2
+  echo "Error: Could not parse org/repo from GITHUB_REPO_URL: $GITHUB_REPO_URL" >&2
   exit 1
 fi
 

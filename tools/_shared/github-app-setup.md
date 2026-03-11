@@ -72,6 +72,7 @@ Then edit `.env.github` with your actual values.
 Create `.env.github` in your project root with these contents:
 
 ```bash
+GITHUB_REPO_URL="https://github.com/your-org/your-repo.git"
 GITHUB_APP_ID=123456
 GITHUB_APP_INSTALLATION_ID=78901234
 GITHUB_APP_PRIVATE_KEY="$(cat ~/.config/github-app/your-app-name.YYYY-MM-DD.private-key.pem)"
@@ -86,6 +87,7 @@ cat ~/.config/github-app/your-app-name.YYYY-MM-DD.private-key.pem
 Then paste the full key (including `-----BEGIN RSA PRIVATE KEY-----` and `-----END RSA PRIVATE KEY-----` lines) into `.env.github`:
 
 ```bash
+GITHUB_REPO_URL="https://github.com/your-org/your-repo.git"
 GITHUB_APP_ID=123456
 GITHUB_APP_INSTALLATION_ID=78901234
 GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
@@ -99,6 +101,13 @@ MIIEpAIBAAKCAQEA...
 - `123456` → your actual App ID
 - `78901234` → your actual Installation ID
 - The private key content → your actual `.pem` file contents
+- `https://github.com/org/repo.git` → your canonical repo URL (required; scripts use this exclusively, no git remote parsing)
+
+**Required — GITHUB_REPO_URL:** Scripts use this exclusively for org/repo. No fallback to git remote. Use the current repo URL (e.g. after a rename, use the new name):
+
+```bash
+GITHUB_REPO_URL="https://github.com/altirllc/lf-webui.git"
+```
 
 ### 3. Verify the Environment File
 
@@ -112,7 +121,7 @@ ls -la .env.github
 git status --ignored | grep .env.github
 ```
 
-### 4. Copy Scripts to Your Project
+### 4. Copy and Commit Scripts to Your Project
 
 When setting up a new project, copy the GitHub scripts:
 
@@ -125,6 +134,8 @@ Or if you've cloned cursor-commands to a temp location:
 ```bash
 cp -r /tmp/cursor-commands/scripts/ your-project/scripts/
 ```
+
+**CRITICAL — Scripts must be committed:** The orchestrator runs `scripts/github-create-pr.sh` from the worktree directory. A worktree only contains files that are **committed** on the branch it was created from. If scripts are untracked, they will not exist in the worktree → "No such file or directory". Always commit scripts to the branch used for worktree creation (e.g. `develop`) before running the orchestrator.
 
 ### 5. Verify Setup
 
@@ -141,6 +152,16 @@ If successful, it outputs a token (starts with `ghs_`). If it fails, check:
 - The App ID and Installation ID are correct
 - The private key content is correct (not a file path)
 - The App is installed for your repository
+
+---
+
+## Worktree Creation Behavior
+
+The setup agent creates a worktree with `git worktree add .worktrees/{{TASK_ID}} -b {{BRANCH_NAME}}` **from the current branch** of the main repo.
+
+- **If you are on `develop`** when the orchestrator runs, the worktree will have whatever is **committed** on `develop`.
+- **Scripts must be committed** to that branch. Untracked files in the main repo do not exist in the worktree.
+- **Where to stay:** Before invoking the orchestrator, ensure you are on the branch you want to base worktrees from (typically `develop`). All scripts and config the orchestrator needs must be committed on that branch.
 
 ---
 
@@ -200,16 +221,20 @@ Ensure your GitHub App has at least these permissions:
 - Ensure the private key is the actual content, not a file path
 - Ensure the private key hasn't expired (regenerate if needed)
 
-**"Could not parse org/repo from remote URL"**
+**"GITHUB_REPO_URL is required" or "Could not parse org/repo"**
 
-- The script expects standard GitHub URLs
-- Run `git remote get-url origin` to see your remote format
-- Supported formats: `https://github.com/org/repo` or `git@github.com:org/repo`
+- Set `GITHUB_REPO_URL="https://github.com/org/repo.git"` in `.env.github` (required)
+- Use the current repo URL; if the repo was renamed, use the new name
 
 **Token works for git but PR creation fails**
 
 - Verify the App has "Pull requests: Read & Write" permission
 - Check that the base branch exists (default is `develop`)
+
+**PR created but script returns "No output" or fails**
+
+- The script extracts the PR URL from the API response. If extraction fails (e.g. API format change), the PR may still be created but the script exits without printing the URL.
+- Install `jq` for more robust JSON parsing: `brew install jq` (macOS) or `apt install jq` (Linux)
 
 ---
 

@@ -4,6 +4,9 @@
 #
 # This script uses a GitHub App installation token (not gh CLI) for reliability.
 #
+# URL extraction: Uses jq when available, else grep. The grep fallback can fail
+# if GitHub API response format changes; jq is more robust.
+#
 # Required:
 #   GITHUB_TOKEN - Installation access token (from mint-github-token.sh)
 #
@@ -12,8 +15,10 @@
 #   $2 - PR title
 #   $3 - PR body
 #   $4 - Base branch (optional, defaults to "develop")
-#   $5 - Org (optional, overrides git remote parsing)
-#   $6 - Repo (optional, overrides git remote parsing)
+#   $5 - Org (optional, from .env.github GITHUB_REPO_URL if not passed)
+#   $6 - Repo (optional, from .env.github GITHUB_REPO_URL if not passed)
+#
+# Org/repo: Pass as args 5 and 6, or set GITHUB_REPO_URL in .env.github. No git remote parsing.
 #
 # Usage:
 #   GITHUB_TOKEN=$(bash scripts/mint-github-token.sh)
@@ -47,24 +52,35 @@ if [[ -z "${GITHUB_TOKEN:-}" ]]; then
   exit 1
 fi
 
-# Use explicit org/repo if provided; otherwise derive from git remote
+# Use explicit org/repo if provided; otherwise load from .env.github GITHUB_REPO_URL
 if [[ -z "${ORG}" || -z "${REPO}" ]]; then
-  REMOTE_URL=$(git remote get-url origin 2>/dev/null || echo "")
-
-  if [[ -z "${REMOTE_URL}" ]]; then
-    echo "Error: Could not get git remote URL" >&2
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+  # If in a worktree, .env.github is in the main repo root
+  if [[ -f "$PROJECT_ROOT/.git" ]]; then
+    GIT_DIR=$(cd "$PROJECT_ROOT" && sed 's/gitdir: //' .git | tr -d ' \n')
+    PROJECT_ROOT=$(dirname "$(dirname "$GIT_DIR")")
+  fi
+  if [[ ! -f "$PROJECT_ROOT/.env.github" ]]; then
+    echo "Error: .env.github not found. Pass org/repo as args 5 and 6, or set GITHUB_REPO_URL in .env.github." >&2
     exit 1
   fi
-
-  # Parse org/repo using sed (portable, no BASH_REMATCH)
-  ORG_REPO=$(echo "$REMOTE_URL" | sed -n 's|.*github\.com[:/]\([^/][^/]*\)/\([^/.]*\).*|\1 \2|p')
+  set -a
+  # shellcheck source=/dev/null
+  source "$PROJECT_ROOT/.env.github"
+  set +a
+  if [[ -z "${GITHUB_REPO_URL:-}" ]]; then
+    echo "Error: GITHUB_REPO_URL is required in .env.github when org/repo not passed as args." >&2
+    exit 1
+  fi
+  ORG_REPO=$(echo "$GITHUB_REPO_URL" | sed -n 's|.*github\.com[:/]\([^/][^/]*\)/\([^/.]*\).*|\1 \2|p')
   ORG=$(echo "$ORG_REPO" | cut -d' ' -f1)
   REPO=$(echo "$ORG_REPO" | cut -d' ' -f2)
 fi
 
 # Validate org/repo before API call
 if [[ -z "${ORG}" || -z "${REPO}" ]]; then
-  echo "Error: Could not determine org/repo. Pass as args 5 and 6, or ensure git remote is set." >&2
+  echo "Error: Could not determine org/repo. Pass as args 5 and 6, or set GITHUB_REPO_URL in .env.github." >&2
   exit 1
 fi
 
@@ -84,8 +100,13 @@ RESPONSE=$(curl -s -L -X POST \
     \"base\": \"${BASE_BRANCH}\"
   }")
 
-# Extract PR URL from response
-PR_URL=$(echo "${RESPONSE}" | grep -o '"html_url":"[^"]*pull[^"]*"' | head -1 | cut -d'"' -f4)
+# Extract PR URL from response (jq preferred; grep fallback if jq unavailable)
+# Note: grep-based extraction can fail if GitHub API response format changes.
+if command -v jq >/dev/null 2>&1; then
+  PR_URL=$(echo "${RESPONSE}" | jq -r '.html_url // empty')
+else
+  PR_URL=$(echo "${RESPONSE}" | grep -o '"html_url":"[^"]*pull[^"]*"' | head -1 | cut -d'"' -f4)
+fi
 
 if [[ -z "${PR_URL}" ]]; then
   # Check for error message

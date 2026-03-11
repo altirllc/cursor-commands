@@ -266,6 +266,9 @@ After the review loop exits:
 2. Collect all DECISION_POINTs from all subagent responses
 3. Collect all UNRESOLVED_BLOCKERs from all subagent responses
 4. Git operations — run as one block so variables persist:
+
+   **CRITICAL — Git push and worktree cleanup:** Run `git push` and `git worktree remove` with `required_permissions: ["all"]`. Cursor's sandbox blocks access to worktree `.git` files; without full permissions, push fails with "Operation not permitted".
+
    ```bash
    cd "$WORKTREE_PATH" && git add -A && git commit -m "{{COMMIT_TYPE}}: {{DESCRIPTION}}" && git push origin "$BRANCH_NAME"
    source "$WORKTREE_PATH/.github-setup.env"
@@ -273,7 +276,7 @@ After the review loop exits:
    cd "$WORKTREE_PATH" && git remote set-url origin "$ORIGINAL_REMOTE"
    ```
 5. Output the PR URL
-6. Cleanup worktree:
+6. Cleanup worktree (run with `required_permissions: ["all"]` — same sandbox restriction as push):
    ```bash
    git worktree remove "$WORKTREE_PATH" --force
    ```

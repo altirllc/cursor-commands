@@ -37,6 +37,8 @@ From the orchestrator (passed in the task description):
 
 Run these commands **from the project root** (where the main repo and `scripts/` directory live).
 
+**Worktree creation behavior:** `git worktree add` creates the worktree from the **current branch**. If you are on `develop`, the worktree will have whatever is committed on `develop`. Scripts must be committed to that branch — untracked files do not exist in the worktree.
+
 ### Step 1: Create worktree with branch
 
 ```bash
