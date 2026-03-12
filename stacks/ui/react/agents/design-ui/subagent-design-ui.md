@@ -41,9 +41,14 @@ Before designing anything, read and internalize these sections from the intellig
 3. **Phase 13: Creative Guidelines** — Follow the decision framework
 4. **Phase 14: Unique Feature Deep Dive** — Understand the reasoning behind distinctive patterns
 5. **Phase 11: Anti-Patterns** — Know what NOT to do
+6. **Part 5: Production-Ready Creation** — Understand the tiny-detail patterns that make UI production-ready
+7. **Phase 17: Tiny Detail Patterns** — Know the exact spacing, typography, icon, hover, and border patterns
 
 **Design Principles Application:**
 For each design decision you make, mentally check: "Does this honour the principles documented in Phase 12?" If not, reconsider.
+
+**Tiny Details Application:**
+For each component you use, mentally check: "Do the spacing, icons, typography, and hover states match the patterns in Phase 17?" If not, fix it immediately — don't leave tiny details for later.
 
 ---
 
@@ -219,7 +224,6 @@ For each variety, produce this complete entry:
 **Source:** [existing feature from codebase + file path, OR original design reasoning]
 
 **Principles Honoured:**
-
 - Principle [N]: [name] — [how this design honours it]
 - Principle [N]: [name] — [how this design honours it]
 
@@ -299,7 +303,6 @@ interface ComponentNameProps {
 If no new components are needed — state: "No new components required. All UI composed from existing components."
 
 **If creating a new component:**
-
 - Explain why existing components cannot be composed to achieve this
 - Explain how the new component follows the styling patterns from Phase 2
 - Explain how it fits the component architecture from Phase 3
@@ -307,7 +310,6 @@ If no new components are needed — state: "No new components required. All UI c
 ---
 
 **Styling Compliance Check:**
-
 - [ ] Uses only `palette.*` colors from intelligence doc
 - [ ] Uses only `spacing(n)` values from intelligence doc
 - [ ] Uses only typography variants from intelligence doc
@@ -406,6 +408,160 @@ EXISTING PATTERN CHECK (for Variety 1 if it follows an existing pattern):
 
 ---
 
+## PHASE 5B — Production-Readiness Confidence Check
+
+**CRITICAL: This phase determines if the varieties are ready for production or need refinement.**
+
+For EACH variety, complete the following comprehensive confidence assessment. Score each category honestly. If the total confidence score for ANY variety is below 95%, you MUST go back and refine that variety before proceeding to Phase 6.
+
+---
+
+### Confidence Scoring Template (Complete for Each Variety)
+
+```
+═══════════════════════════════════════════════════════════════════════════════
+VARIETY [N] — [Name] — PRODUCTION-READINESS CONFIDENCE CHECK
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CATEGORY 1: VISUAL POLISH (20 points total)                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ [ ] Spacing uses ONLY spacing(n) tokens — no magic numbers       (3 pts)  │
+│ [ ] Colors use ONLY palette.* tokens — no inline hex             (3 pts)  │
+│ [ ] Typography uses ONLY theme variants — no inline font sizes   (3 pts)  │
+│ [ ] Border radius matches existing components exactly             (2 pts)  │
+│ [ ] Shadows use ONLY theme shadows — no custom shadows            (2 pts)  │
+│ [ ] Icon sizes are consistent with context (18px cards, etc.)    (3 pts)  │
+│ [ ] Borders follow documented patterns (weight, color, usage)    (2 pts)  │
+│ [ ] No visual elements feel "off" or inconsistent                (2 pts)  │
+│                                                          Score: ___/20    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CATEGORY 2: TYPOGRAPHY & HIERARCHY (15 points total)                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ [ ] Labels use caption + text.secondary consistently             (3 pts)  │
+│ [ ] Primary values use appropriate variant (h2 for metrics)      (3 pts)  │
+│ [ ] Secondary values use body2 or subtitle2 appropriately        (2 pts)  │
+│ [ ] Links use link.main color with correct hover behavior        (2 pts)  │
+│ [ ] Information hierarchy is immediately clear on first glance   (3 pts)  │
+│ [ ] Typography pairings match documented patterns                (2 pts)  │
+│                                                          Score: ___/15    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CATEGORY 3: INTERACTION PATTERNS (15 points total)                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ [ ] Hover states are subtle (opacity/background, NOT transform)  (3 pts)  │
+│ [ ] Hover-reveal actions use opacity transition (0 → 1)          (3 pts)  │
+│ [ ] Actions placed near their context (not far away)             (3 pts)  │
+│ [ ] Click targets are appropriately sized (min 32px touch)       (2 pts)  │
+│ [ ] Focus states use theme focus ring                            (2 pts)  │
+│ [ ] Transitions use theme.transitions.create()                   (2 pts)  │
+│                                                          Score: ___/15    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CATEGORY 4: COMPONENT STRUCTURE (15 points total)                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ [ ] Cards have consistent internal spacing pattern               (3 pts)  │
+│ [ ] Action rows have border-top separator                        (2 pts)  │
+│ [ ] Summary metrics use inline layout (not Paper cards)          (2 pts)  │
+│ [ ] View toggles follow tab/segment pattern                      (2 pts)  │
+│ [ ] Lists use correct row patterns from intelligence doc         (2 pts)  │
+│ [ ] Modals (if any) use correct appearance from Phase 5          (2 pts)  │
+│ [ ] FAB (if any) follows established FAB pattern                 (2 pts)  │
+│                                                          Score: ___/15    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CATEGORY 5: STATE HANDLING (15 points total)                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ [ ] Empty state is contextual and instructional (not generic)   (4 pts)  │
+│ [ ] Loading state uses skeletons matching content shape          (4 pts)  │
+│ [ ] Error state is graceful with clear recovery action           (3 pts)  │
+│ [ ] Long text truncates with ellipsis and tooltip if needed      (2 pts)  │
+│ [ ] Many items scenario handled (scroll, virtualization)         (2 pts)  │
+│                                                          Score: ___/15    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CATEGORY 6: NATIVE FEEL (20 points total)                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ [ ] Screenshot test: Looks like same product as existing pages  (5 pts)  │
+│ [ ] Blindfold test: User wouldn't know this is "new" UI         (5 pts)  │
+│ [ ] Pattern test: Every pattern exists elsewhere in product     (4 pts)  │
+│ [ ] Detail test: At 200% zoom, all details look intentional     (3 pts)  │
+│ [ ] No foreign design patterns introduced                        (3 pts)  │
+│                                                          Score: ___/20    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+TOTAL CONFIDENCE SCORE: ___/100 (___%)
+═══════════════════════════════════════════════════════════════════════════════
+
+CONFIDENCE VERDICT:
+[ ] ≥ 95% — PRODUCTION READY — Proceed to Phase 6
+[ ] 90-94% — MINOR REFINEMENTS NEEDED — List items below, fix, re-score
+[ ] 80-89% — SIGNIFICANT REFINEMENTS NEEDED — Go back to Phase 3, revise
+[ ] < 80% — MAJOR REDESIGN NEEDED — This variety needs fundamental rework
+
+ITEMS REQUIRING REFINEMENT (if score < 95%):
+1. [Category]: [Specific item] — [What needs to change]
+2. [Category]: [Specific item] — [What needs to change]
+3. ...
+
+═══════════════════════════════════════════════════════════════════════════════
+```
+
+---
+
+### Confidence Gate Rules
+
+**HARD REQUIREMENT:** ALL varieties must score ≥ 95% before proceeding.
+
+If ANY variety scores below 95%:
+1. List the specific items that lost points
+2. Return to Phase 3 for that variety
+3. Make the specific corrections
+4. Re-run this confidence check
+5. Repeat until ≥ 95%
+
+**Common Point Deductions and Fixes:**
+
+| Deduction | Typical Fix |
+|-----------|-------------|
+| Magic number spacing (e.g., `gap: 12`) | Replace with `gap: theme.spacing(1.5)` |
+| Inline hex color | Replace with `palette.*` token |
+| Dramatic hover transform | Remove transform, use opacity/background |
+| Icon size inconsistent | Standardize: 18px in cards, 16px inline |
+| Missing action row separator | Add `borderTop: 1` on action container |
+| Summary metrics in Paper | Remove Paper wrapper, use inline layout |
+| Generic empty state | Write contextual, helpful message |
+| Skeleton wrong shape | Match skeleton to actual content shape |
+
+---
+
+### Confidence Summary (All Varieties)
+
+After scoring all varieties, produce this summary:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PRODUCTION-READINESS SUMMARY                                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Variety 1 — [Name]: ___% [READY / NEEDS WORK]                              │
+│ Variety 2 — [Name]: ___% [READY / NEEDS WORK]                              │
+│ Variety 3 — [Name]: ___% [READY / NEEDS WORK]                              │
+│ ...                                                                         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ ALL VARIETIES ≥ 95%? [ ] YES — Proceed to Phase 6                          │
+│                       [ ] NO — Return to Phase 3 for refinement            │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## PHASE 6 — AI Recommendation
 
 After all varieties are verified, give your recommendation as an expert designer who deeply understands this product.
@@ -418,7 +574,6 @@ After all varieties are verified, give your recommendation as an expert designer
 [4–6 sentences. Ground this in: the user's perspective, the product's design philosophy from the intelligence document, and what makes this the strongest overall design. Be specific — reference actual principles from Phase 12 of the intelligence document and actual patterns from the codebase.]
 
 **Principles honoured by this recommendation:**
-
 - Principle [N]: [name] — [specific way it's honoured]
 - Principle [N]: [name] — [specific way it's honoured]
 - Principle [N]: [name] — [specific way it's honoured]
@@ -470,7 +625,6 @@ If Phase 15 (Implementation Templates) contains a relevant template, reference i
 "Start from the [Template Name] template in the intelligence document's Phase 15."
 
 **Key Implementation Steps:**
-
 1. [Step 1]
 2. [Step 2]
 3. [Step 3]
@@ -479,7 +633,6 @@ If Phase 15 (Implementation Templates) contains a relevant template, reference i
 "Before submitting for review, verify against the Phase 16 checklist in the intelligence document."
 
 **Files to Create:**
-
 ```
 [feature-name]/
   index.tsx           — Route/export
@@ -503,6 +656,7 @@ INTELLIGENCE DOCUMENT ALIGNMENT:
 [ ] Design honours principles in Phase 12
 [ ] No anti-patterns from Phase 11 are introduced
 [ ] New components (if any) follow patterns from Phase 14
+[ ] Tiny details match Phase 17 patterns (spacing, typography, icons, hover)
 
 USER VALUE:
 [ ] Primary user task is efficient
@@ -514,4 +668,34 @@ PRODUCTION READINESS:
 [ ] Responsive behaviour defined
 [ ] All components properly typed
 [ ] Implementation path is clear
+
+CONFIDENCE GATE PASSED:
+[ ] Phase 5B confidence score ≥ 95% for ALL varieties
+[ ] No point deductions remain unaddressed
+[ ] All tiny-detail checks passed
 ```
+
+---
+
+## Iteration Protocol
+
+If at any point the design does not meet the 95% confidence threshold:
+
+1. **Identify** — List the exact items that lost points
+2. **Diagnose** — Determine root cause (missing pattern knowledge? wrong component? spacing error?)
+3. **Fix** — Make the specific correction in the variety code
+4. **Re-score** — Run Phase 5B confidence check again
+5. **Repeat** — Until all varieties achieve ≥ 95%
+
+**Never deliver a design with confidence < 95%.** The extra iteration is always worth it.
+
+---
+
+## Quality Standard
+
+A production-ready design means:
+- A designer would approve it without changes
+- A user would not notice it's "new" compared to existing screens
+- Every single pixel is intentional
+- Every micro-interaction is consistent with the product
+- No detail is too small to get right

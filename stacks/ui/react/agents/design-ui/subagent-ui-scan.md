@@ -753,11 +753,280 @@ Create a verification checklist for new UI:
 
 ---
 
+## PART 5: PRODUCTION-READY UI CREATION
+
+This section provides guidance for creating NEW UI that is production-ready — meaning it requires no additional designer tweaks before shipping.
+
+### PHASE 17 — How to Create Production-Ready New UI
+
+**Production-ready means:**
+- No designer review needed before shipping
+- Looks polished and intentional at every detail level
+- Feels native to the existing product — a user wouldn't notice it's new
+- Works elegantly at all states (empty, loading, error, populated)
+
+---
+
+#### 17.1 The Production-Ready Mindset
+
+**Look through multiple lenses:**
+
+1. **User's Eyes:** Is this easy to scan? Is the hierarchy clear? Can I accomplish my task efficiently?
+2. **Client's Eyes:** Does this look professional? Does it match the quality of other screens?
+3. **Designer's Eyes:** Are the details right? Spacing, alignment, typography, color usage?
+4. **Developer's Eyes:** Is this maintainable? Does it use existing patterns correctly?
+
+**Small details matter enormously:**
+
+Document these small-detail patterns for the codebase:
+
+| Detail Category | What to Document |
+|-----------------|------------------|
+| Spacing consistency | Gap between elements, padding inside containers, margins between sections |
+| Typography pairing | Which variants pair together (caption + h2, body2 + subtitle2, etc.) |
+| Border usage | When borders appear, their color, their weight |
+| Shadow application | Which elements get shadows, which don't |
+| Icon sizing | Standard sizes for different contexts (18px in cards, 16px inline, etc.) |
+| Hover states | What changes on hover (opacity, background, underline, reveal actions) |
+| Color semantics | What each color means (brand for actions, grey for secondary, blue for links) |
+| Loading shimmer | Where skeletons go, their shapes, their widths |
+| Empty state tone | Instructional vs neutral vs encouraging |
+
+---
+
+#### 17.2 The Creative Process for New UI
+
+**Goal:** Create UI using creativity and existing components that achieves the best possible outcome — NOT just permutation/combination of existing patterns.
+
+**Process:**
+
+1. **Understand the user's actual task**
+   - What are they trying to accomplish?
+   - What's their mental model?
+   - What information do they need, in what order?
+
+2. **Visualize the ideal solution**
+   - Forget the existing components momentarily
+   - What would be the BEST way to solve this?
+   - Sketch the ideal interaction flow
+
+3. **Map to existing patterns**
+   - Which existing components can serve this ideal?
+   - What combinations would work?
+   - What adjustments are needed?
+
+4. **Identify gaps**
+   - What can't be done with existing components?
+   - Is a new component genuinely needed?
+   - Can existing components be composed creatively?
+
+5. **Refine with details**
+   - Apply the small-detail patterns
+   - Check every spacing value
+   - Verify typography choices
+   - Ensure hover states are consistent
+
+---
+
+#### 17.3 When to Create New Components
+
+**Create a new component ONLY when:**
+
+1. The functionality genuinely doesn't exist in any composable form
+2. Reusing existing components would result in semantic mismatch
+3. The new pattern will be reused (not a one-off)
+4. The alternative is excessive prop complexity
+
+**When creating new components, they MUST:**
+
+1. **Use the design token system:**
+   - Colors from `palette.*` — never inline hex
+   - Spacing from `spacing(n)` — never arbitrary pixels
+   - Typography from variants — never inline font sizes
+   - Shadows from `theme.shadows.*` — never custom shadows
+   - Border radius from `theme.shape.borderRadius`
+
+2. **Follow the styling approach:**
+   - Use `styled()` with `skipSx: true` for reusable components
+   - Reference theme values consistently
+   - Name styled components semantically
+
+3. **Match interaction patterns:**
+   - Hover reveals secondary actions (opacity fade in)
+   - Click for primary actions
+   - Focus states use the standard focus ring
+   - Transitions use `theme.transitions.create()`
+
+4. **Integrate with existing systems:**
+   - Cards should accept context props if contextual
+   - Modals should use DialogWindow with appropriate appearance
+   - Lists should integrate with existing table/list patterns
+
+---
+
+#### 17.4 Production-Ready Checklist for New UI
+
+Before considering new UI complete, verify EVERY item:
+
+**Visual Polish:**
+- [ ] Every spacing value comes from `spacing(n)` — no magic numbers
+- [ ] Every color comes from the palette — no inline hex
+- [ ] Typography uses theme variants — no inline font sizes
+- [ ] Border radius is consistent with existing components
+- [ ] Shadows match the established patterns
+- [ ] Icon sizes are consistent with similar contexts
+
+**Information Hierarchy:**
+- [ ] The most important information is visually dominant
+- [ ] Secondary info is clearly subordinate (color, size, position)
+- [ ] Tertiary info is hidden until needed (hover, expand, click)
+- [ ] Labels use caption variant and secondary color
+- [ ] Values use appropriate emphasis (h2 for primary metrics, body2 for data)
+
+**Interaction Quality:**
+- [ ] Hover states are subtle and consistent (no dramatic transforms)
+- [ ] Actions appear near their context (hover-reveal for row actions)
+- [ ] Feedback is immediate but not intrusive (toast, not banner)
+- [ ] Loading states match the content structure (skeletons)
+- [ ] Empty states are helpful, not just "No data"
+
+**Consistency:**
+- [ ] Looks native next to existing screens — not obviously new
+- [ ] Uses the same patterns as similar features
+- [ ] Follows the designer's reasoning documented in Phase 12
+- [ ] Doesn't introduce anti-patterns from Phase 11
+
+**Edge Cases:**
+- [ ] Empty state is designed and helpful
+- [ ] Loading state preserves layout (skeletons)
+- [ ] Error state is graceful and actionable
+- [ ] Long text truncates gracefully (ellipsis, tooltip)
+- [ ] Many items scroll correctly (virtualization if needed)
+
+---
+
+#### 17.5 Tiny Detail Patterns to Document
+
+These micro-level patterns make the difference between "good" and "production-ready":
+
+**Typography Pairings (document exact combinations):**
+```
+Label + Value:
+  - caption (greyScale[6]) + h2 (text.primary) — for primary metrics
+  - caption (text.secondary) + subtitle2 (text.primary) — for secondary metrics
+  - caption (text.secondary) + body2 (text.primary) — for data rows
+
+Link Patterns:
+  - body2 with link.main, fontWeight 500-600, no underline, underline on hover
+  - Never use link color for non-clickable text
+
+Meta Information:
+  - caption + text.secondary + inline layout with gaps
+  - Example: "Mar 25 • 3d in stage • JS"
+```
+
+**Icon Sizing Standards (document per context):**
+```
+| Context | Icon Size | Example |
+|---------|-----------|---------|
+| Card quick actions | 18px | sx={{ fontSize: 18 }} |
+| Inline with text | 16px | fontSize="small" |
+| FAB/Primary action | 24px | default |
+| Table row actions | 18px | sx={{ fontSize: 18 }} |
+| Indicators/badges | 14-16px | sx={{ width: 16, height: 16 }} |
+```
+
+**Spacing Rhythm (document the pattern):**
+```
+| Element | Vertical Gap | Horizontal Gap |
+|---------|--------------|----------------|
+| Page sections | spacing(4) - 32px | — |
+| Card internal sections | spacing(2) - 16px | — |
+| Related items (label+value) | spacing(0.5) - 4px | — |
+| Inline meta items | — | spacing(2) - 16px |
+| Card grid | spacing(2) - 16px | spacing(2) - 16px |
+| Table cell padding | spacing(1.5) vertical | spacing(2) horizontal |
+```
+
+**Hover State Vocabulary (document exactly):**
+```
+| Element Type | Hover Effect | Implementation |
+|--------------|--------------|----------------|
+| Card | Subtle shadow + border color | boxShadow: 'card', borderColor: greyScale[4] |
+| Row | Background tint | backgroundColor: action.hover |
+| Link | Underline | textDecoration: 'underline' |
+| Button (icon) | Background circle | Default IconButton behavior |
+| Reveal actions | Opacity fade in | opacity: 0 → 1, transition 0.2s |
+| NEVER | Transform/scale | — |
+```
+
+**Border Patterns (document when used):**
+```
+| Use Case | Border Style |
+|----------|--------------|
+| Cards (default) | 1px solid divider |
+| Cards (at-risk) | 1px solid warning.light |
+| Section separator | borderTop: 1px solid divider |
+| Stage indicator | borderLeft: 4px solid [stage.color] |
+| Table header | borderBottom: 1px solid divider |
+| Focus state | Use theme focus ring |
+```
+
+**Action Placement Patterns (document rules):**
+```
+1. Primary actions: Always visible, prominent position
+2. Secondary actions: Hover-reveal, near their target
+3. Contextual actions: In dropdown/menu from kebab icon
+4. Bulk actions: Sticky bottom bar when items selected
+5. FAB: Fixed position, bottom-right, for primary creation
+```
+
+---
+
+#### 17.6 Common Production-Ready Mistakes
+
+Document mistakes to avoid:
+
+| Mistake | Why It Fails | Correct Approach |
+|---------|--------------|------------------|
+| Dramatic hover effects (transform, scale) | Feels foreign to the product | Subtle: opacity, background color, underline |
+| Inline hex colors | Won't adapt to dark mode or theme changes | Use `palette.*` tokens |
+| Arbitrary spacing (13px, 17px) | Breaks visual rhythm | Use `spacing(n)` — 8, 12, 16, 24 |
+| Custom font sizes | Inconsistent hierarchy | Use typography variants |
+| New card patterns for each feature | Visual fragmentation | Use the card system with context |
+| Actions far from content | Violates proximity principle | Actions near their target |
+| Heavy shadows everywhere | Dilutes elevation meaning | Shadows only where established |
+| Loading spinners mid-content | Layout shift, feels broken | Skeletons that match content shape |
+| Generic empty states | Unhelpful, feels unfinished | Contextual, instructional empty states |
+| Overloaded information | Cognitive overload | Progressive disclosure, clear hierarchy |
+| Summary metrics in Paper cards | Wastes space, adds visual noise | Inline metrics with no container |
+| View toggles as custom buttons | Inconsistent with existing tabs | Use established tab/segment pattern |
+| Cards with excessive padding | Feels loose and unfinished | Tight, intentional spacing |
+| Icon sizes varying randomly | Visual inconsistency | Standard sizes per context |
+| Missing action separators | Actions run together visually | Border-top before action row |
+| Skeleton widths guessed | Layout shift when content loads | Match actual content dimensions |
+
+---
+
+#### 17.7 The Native Feel Test
+
+Before marking new UI complete, ask:
+
+1. **Screenshot Test:** If you screenshot this next to an existing screen, does it look like the same product?
+2. **Blindfold Test:** If a user navigated here without knowing it's new, would they notice?
+3. **Pattern Test:** Does every pattern used exist elsewhere in the product?
+4. **Detail Test:** At 200% zoom, do all the small details look intentional?
+5. **State Test:** In empty/loading/error states, does it still feel polished?
+
+If any answer is NO — iterate until it's YES.
+
+---
+
 ## Output Document
 
 Save the output as `UI-DESIGN-INTELLIGENCE.md` at the project root (or in `docs/` if that directory exists).
 
-Structure the document with all 16 phases organized into the 4 parts as specified above.
+Structure the document with all 17 phases organized into the 5 parts as specified above.
 
 ### Depth and Length Requirements
 
@@ -817,12 +1086,22 @@ PART 4 — IMPLEMENTATION:
 [ ] Have I created a final checklist specific to this codebase?
 [ ] Are the templates complete and ready to use?
 
+PART 5 — PRODUCTION-READY CREATION:
+[ ] Have I documented small-detail patterns (spacing, typography pairing, borders, shadows)?
+[ ] Have I documented hover states and interaction patterns at detail level?
+[ ] Have I documented when to create new components vs reuse existing?
+[ ] Have I documented the production-ready checklist items?
+[ ] Have I documented common mistakes and their corrections?
+[ ] Have I documented the "native feel" test questions?
+
 CONFIDENCE QUESTION:
 Am I 100% confident that this document:
 1. Covers every design pattern, component, layout, and interaction?
 2. Explains WHY each pattern exists, not just WHAT it is?
 3. Enables someone to create NEW features that feel native to this product?
 4. Enables CREATIVE extension that stays true to the design philosophy?
+5. Provides enough detail about small patterns that new UI will be production-ready?
+6. Distinguishes between "following patterns" and "copying patterns"?
 
 If the answer is anything less than YES — go back and iterate.
 Do not finalise the document until the answer is an unqualified YES.
@@ -839,6 +1118,6 @@ At the end of the document, include:
 **Document Version:** 1.0
 **Generated:** [date]
 **Codebase Snapshot:** [git commit hash if available]
-**Purpose:** Enable creation of production-ready UI that is native to this design system
+**Purpose:** Enable creation of production-ready UI that is native to this design system and requires no designer review before shipping
 **Next Scan:** Run again when the codebase changes significantly
 ```
