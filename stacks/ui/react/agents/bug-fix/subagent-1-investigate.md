@@ -99,6 +99,15 @@ Only when you are confident (90%+ or best hypothesis), state:
 ━━━ STATUS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 COMPLETED
 
+━━━ REQUIREMENTS_UNDERSTOOD ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[One paragraph in plain language — what you understood the bug to be.
+Written for the human. "The user sees X when they do Y. I believe the cause is Z."]
+
+━━━ AGENT_REASONING ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Key conclusions and reasoning in simple language.
+How you traced the execution. What evidence confirmed the root cause.
+What you ruled out and why. For human review.]
+
 ━━━ BUG DESCRIPTION ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [Full bug description and reproduction steps — do not summarize]
 

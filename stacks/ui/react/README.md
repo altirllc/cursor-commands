@@ -1,6 +1,62 @@
-# React + TypeScript Autonomous Agent Stack
+# React + TypeScript Agent Stack
 
-Fully autonomous multi-agent pipelines for feature development, bug fixes, and enhancements in React + TypeScript codebases.
+Multi-agent pipelines for feature development, bug fixes, and enhancements in React + TypeScript codebases. The orchestrator runs agents and stops for human approval at clarity and planning—you stay in control while the agent handles execution.
+
+---
+
+## Orchestrator Internals Map
+
+How the orchestrator works, without reading agent implementations:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           ORCHESTRATOR FLOW (high-level)                          │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+  PHASE 0 — Parse input
+  ├── TASK_ID? → resume or continue (load state, skip setup)
+  ├── delete_memory? → delete state, stop
+  └── No TASK_ID? → new task
+
+  PHASE 1 — Setup
+  ├── Ensure .orchestrator-state/ in .gitignore
+  ├── New: create worktree + branch + GitHub token → write state
+  ├── Resume: use existing worktree from state (skip setup)
+  └── Continue: restore worktree from PR branch → write state
+
+  PHASE 2 — Workflow (Feature / Bug Fix / Enhancement)
+  │
+  ├── Clarity / Investigate subagent
+  │   └── CLARIFICATION GATE ⏸ HUMAN STOP
+  │       • Present: what I understood, doubts, how to proceed
+  │       • Human re-invokes with clarification_answers or proceed_from_clarity_gate
+  │       • State written: handoffs.clarity, currentPhase
+  │
+  ├── Plan subagent (Feature / Bug Fix only; Enhancement skips)
+  │   └── PLAN APPROVAL GATE ⏸ HUMAN STOP
+  │       • Present: summary, changes by file, technical doubts
+  │       • Human re-invokes with plan_approval: approved | rejected | needs_context
+  │       • State written: handoffs.plan, currentPhase
+  │
+  ├── Implement subagent(s)
+  │   └── Code written in worktree
+  │
+  ├── Review loop (max 5x)
+  │   ├── Test Executor → PR Review → Blocker Resolver
+  │   └── Auto-fix blockers; warnings don't block
+  │
+  ├── Test Checklist → PR Description
+  │
+  └── PHASE 4 — PR Creation
+      ├── New task: gh pr create, push, remove worktree
+      └── Continuation: push only (existing PR updates)
+```
+
+**Human control points:** Clarification gate and Plan approval gate. No implementation until you approve.
+
+**State persistence:** `.orchestrator-state/{TASK_ID}.json` stores worktree path, handoffs, and phase. Re-invoke with `TASK_ID=xyz` to resume or continue.
+
+**Why this approach?** The orchestrator makes it easy to get work done while staying in control. You own the vision, strategy, and plan; the agent executes what you approve. Structured prompts and gates replace hand-crafted instructions—orchestration without the busywork. You keep confidence that changes going to production reflect your decisions, not the agent's.
 
 ---
 
@@ -109,7 +165,8 @@ react/
     │   ├── autonomous-protocol.md
     │   ├── context-packet.md
     │   ├── handoff-format.md
-    │   └── quality-gate.md
+    │   ├── quality-gate.md
+    │   └── state-schema.md            # Orchestrator state format and persistence
     ├── setup/
     │   └── subagent-setup.md          # Phase 1: worktree + token (orchestrator invokes)
     ├── workflows/
@@ -147,9 +204,17 @@ react/
 
 ## Key Concepts
 
-### Autonomous Operation
+### Human-in-Control Gates
 
-Every agent runs without human intervention. Ambiguities are resolved by: (1) checking clarification answers, (2) reading the codebase, (3) making the safer engineering judgment and documenting it as a `DECISION_POINT`.
+The orchestrator **always stops** for human review at two points:
+- **Clarification gate** — after Clarity (or Investigate for bug fix). You answer questions, or say "proceed."
+- **Plan approval gate** — after Plan. You approve, reject with feedback, or ask for more context.
+
+Only after you approve does implementation run. This keeps you in control of strategy and code direction.
+
+### Agent Execution (Post-Approval)
+
+Once you approve, agents run without further human intervention. Ambiguities are resolved by: (1) checking clarification answers, (2) reading the codebase, (3) making the safer engineering judgment and documenting it as a `DECISION_POINT`.
 
 ### Structured Handoffs
 

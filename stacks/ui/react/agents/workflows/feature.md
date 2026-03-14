@@ -14,8 +14,8 @@ Phase 2: PLAN AGENT
   Agent: agents/feature/subagent-2-feature-plan.md
   Mode: read-only
   Input: clarity handoff
-  Output: implement blocks (one per chunk)
-  Gate: auto-approval (no human sign-off)
+  Output: plan handoff with implement blocks (one per chunk)
+  Gate: PLAN APPROVAL GATE — orchestrator stops for human approval before implementation
 
 Phase 3: IMPLEMENT AGENT (per chunk, sequential)
   Agent: agents/feature/subagent-3-implement.md

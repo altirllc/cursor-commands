@@ -123,6 +123,15 @@ CLASSIFICATION:
 ━━━ STATUS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 COMPLETED
 
+━━━ REQUIREMENTS_UNDERSTOOD ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[One paragraph in plain language. What the task is. What the user wants built.
+Written for human review — no jargon. This is shown to the user before any questions.]
+
+━━━ AGENT_REASONING ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2-4 bullet points. Key conclusions, assumptions, and reasoning.
+What the agent inferred from the codebase. Important decisions made.
+Written for human review — simple language. This is shown to the user.]
+
 ━━━ CLASSIFICATION ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ENHANCEMENT | FEATURE (reclassified)
 Evidence: [file count, shared code, contracts]

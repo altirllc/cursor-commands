@@ -55,6 +55,30 @@ One exception: TypeScript interface and type definitions. These are design contr
 
 ---
 
+## Phase 0 — Similar Feature Check (MANDATORY FIRST)
+
+Before any planning, search the codebase for similar or related features. If one exists, your plan MUST follow the same patterns.
+
+1. **Search:** Look for features that do something similar (same domain, same user flow, same data pattern).
+2. **Read:** Open and read every file of the most similar feature. Do not infer from structure alone.
+3. **Document:** Cite the exact files and patterns you will replicate.
+4. **Commit:** Your plan must not deviate from these patterns. Consistency over novelty.
+
+```
+SIMILAR FEATURE FOUND:
+  Feature: [name or description]
+  Files: [exact paths — you must have read all of them]
+  Patterns to follow:
+    - [pattern 1]: [file:component/function] — [what to replicate]
+    - [pattern 2]: [file:component/function] — [what to replicate]
+
+  If none found: "No similar feature found. Will follow nearest domain patterns from [files]."
+```
+
+**Rule:** Do not propose a pattern that diverges from existing code without explicit justification.
+
+---
+
 ## Phase 1 — Impact Analysis
 
 Read every file relevant to this feature before answering this phase. Do not infer from file names — open and read them.
@@ -254,12 +278,15 @@ FILES READ:
 
 ---
 
-## Auto-Approval Gate
+## Plan Readiness Checklist (No Confidence % — Use This Only)
 
-In autonomous mode, the plan self-approves. Verify:
+Replace any fuzzy "confidence" self-assessment with this concrete checklist. Verify each item:
 
 ```
-AUTO-APPROVAL CHECKLIST:
+PLAN READINESS CHECKLIST:
+[ ] Similar feature check done — either found and patterns documented, or "none found" stated
+[ ] All files in the plan have been read (no inferences from file names)
+[ ] All patterns cited with exact file paths
 [ ] All MUST_CLARIFY items from clarity phase are resolved
 [ ] All decisions in Phase 8 are resolved (no open questions)
 [ ] All TypeScript contracts are fully defined
@@ -269,8 +296,7 @@ AUTO-APPROVAL CHECKLIST:
 [ ] Implementation order has no circular dependencies
 ```
 
-If ALL items are checked: generate implement blocks immediately.
-If any item FAILS: document as UNRESOLVED_BLOCKER and proceed with best effort.
+**Refinement loop (max 2 iterations):** If any item fails, identify the reason, go back into the code, refine the plan to fix it. Repeat up to 2 times. After 2 refinements, if items still fail, document as UNRESOLVED_BLOCKER in the handoff and present anyway. Do not loop indefinitely.
 
 ---
 
@@ -336,6 +362,8 @@ CHUNK BOUNDARY VERIFIED:
 
 ## Handoff Block
 
+The orchestrator parses `PLAN_READY_FOR_HUMAN_REVIEW` and stops for human approval before implementation. Present the plan simply; the human may approve, reject with feedback, or ask for more context.
+
 ```
 ╔══════════════════════════════════════════════════════════════════╗
 ║  HANDOFF: Feature Plan → Feature Implement                       ║
@@ -343,6 +371,25 @@ CHUNK BOUNDARY VERIFIED:
 
 ━━━ STATUS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 COMPLETED
+
+━━━ PLAN_READY_FOR_HUMAN_REVIEW ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Orchestrator stops here. Present for human approval in simple language:]
+
+SUMMARY: [2-3 sentences — what will be built, high-level approach]
+
+CHANGES BY FILE:
+  - [file path]: [what changes — one line]
+  - [file path]: [what changes — one line]
+
+CODE STRUCTURE: [How code will be organized. Where new files go. How they connect.]
+
+CONSISTENCY WITH EXISTING CODE:
+  [Cite 2-3 specific examples: "Like [existing component] in [file], we will use [pattern]."]
+
+TECHNICAL DOUBTS FOR HUMAN: [Questions the agent cannot resolve. Simple language. Or "None."]
+
+PLAN_READINESS_CHECKLIST: PASSED (all items checked) | PRESENTED_AFTER_MAX_REFINEMENT
+  [If PRESENTED_AFTER_MAX_REFINEMENT: list items that remain unchecked and why]
 
 ━━━ CHUNKS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Total: [N]

@@ -12,3 +12,6 @@
 .idea/
 *.swp
 *.swo
+
+# Orchestrator state (do not commit)
+.orchestrator-state/

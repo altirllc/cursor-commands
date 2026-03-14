@@ -27,9 +27,19 @@ You run shell commands only. No file reading beyond what is needed to execute. Y
 
 From the orchestrator (passed in the task description):
 
+**MODE:** `create` | `restore`
+
+### Create mode (new task)
+
 - **TASK_ID** — unique identifier (e.g., timestamp or short UUID)
 - **TASK_TYPE** — `feature` | `enhancement` | `bug-fix`
 - **SHORT_SLUG** — short slug for branch name (e.g., "fix-duplicate-save")
+
+### Restore mode (continuation on existing PR)
+
+- **TASK_ID** — existing task identifier
+- **BRANCH_NAME** — existing branch (e.g., `agent/feature-abc123-add-oauth`)
+- **CONTINUATION_COUNT** — number of prior continuations (0, 1, 2, ...)
 
 ---
 
@@ -37,9 +47,9 @@ From the orchestrator (passed in the task description):
 
 Run these commands **from the project root** (where the main repo and `scripts/` directory live).
 
-**Worktree creation behavior:** `git worktree add` creates the worktree from the **current branch**. If you are on `develop`, the worktree will have whatever is committed on `develop`. Scripts must be committed to that branch — untracked files do not exist in the worktree.
+**If MODE is create** (new task):
 
-### Step 1: Create worktree with branch
+### Step 1 (Create): Create worktree with new branch
 
 ```bash
 BRANCH_NAME="agent/${TASK_TYPE}-${TASK_ID}-${SHORT_SLUG}"
@@ -48,6 +58,20 @@ git worktree add "$WORKTREE_PATH" -b "$BRANCH_NAME"
 ```
 
 **On failure:** Capture the full error output. Set WORKTREE_CREATED=false in handoff. Do NOT proceed to Step 2.
+
+**If MODE is restore** (continuation on existing PR):
+
+### Step 1 (Restore): Fetch branch and create worktree from existing branch
+
+```bash
+WORKTREE_PATH=".worktrees/${TASK_ID}-cont-${CONTINUATION_COUNT}"
+git fetch origin "$BRANCH_NAME"
+git worktree add "$WORKTREE_PATH" "$BRANCH_NAME"
+```
+
+**Note:** Do NOT use `-b` — the branch already exists. Use BRANCH_NAME and CONTINUATION_COUNT from orchestrator input.
+
+**On failure:** If branch not found → SETUP_STATUS: FAILED, ERROR: "Branch not found. It may have been deleted." If path exists → try `-cont-${CONTINUATION_COUNT+1}` or report failure.
 
 ### Step 2: Mint GitHub token and configure remote
 

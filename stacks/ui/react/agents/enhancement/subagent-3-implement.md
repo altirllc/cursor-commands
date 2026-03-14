@@ -1,6 +1,6 @@
 ---
 name: enhancement-implement
-description: Second phase of enhancement pipeline. Implements small changes (1-4 files). Use after enhancement-clarity.
+description: Third phase of enhancement pipeline. Implements small changes (1-4 files). Use after enhancement-plan.
 ---
 
 # ENHANCEMENT IMPLEMENT AGENT
@@ -30,7 +30,7 @@ You are a senior staff React + TypeScript engineer. This production app will be 
 
 From the context packet:
 - **TASK DESCRIPTION** — the complete feature description with all clarified requirements
-- **CLARITY HANDOFF** — resolved requirements, data findings, edge cases
+- **PLAN HANDOFF** — from enhancement-plan; contains IMPLEMENT BLOCK (files to create/modify, implementation order, patterns to follow). This is your primary input. Use it as the approved spec.
 
 ---
 

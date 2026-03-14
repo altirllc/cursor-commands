@@ -38,6 +38,24 @@ Format: Q: A pairs. Clarity subagents MUST resolve BLOCKER_QUESTIONS from these 
 {{BLOCKER_LIST_OR_TEST_FAILURES}}
 (or "None — this is not a fix cycle")
 
+── PLAN APPROVAL (if re-invoke after Plan Approval Gate) ─────────
+{{PLAN_APPROVAL}}  (approved | rejected | needs_context)
+{{PLAN_FEEDBACK}}  (when rejected: specific feedback for plan refinement)
+(or "None — first run or plan was approved")
+
+When the human re-invokes after the Plan Approval Gate:
+- approved: proceed to implementation
+- rejected: plan agent runs again with PLAN_FEEDBACK to refine
+- needs_context: plan agent runs again with additional context
+
+── CONTINUATION CONTEXT (if this is a continuation run) ──────────
+{{CONTINUATION_CONTEXT}}
+(or "None — this is a new task or resume, not a continuation")
+
+When the human re-invoked with "Continue TASK_ID=xyz. [new requirements]":
+This section contains the new requirements for the existing PR. The task description
+above reflects what to build in this continuation. Previous work (original PR) is done.
+
 ================================================================
 ```
 

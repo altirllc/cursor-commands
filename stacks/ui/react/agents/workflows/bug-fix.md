@@ -13,7 +13,8 @@ Phase 2: FIX PLAN AGENT
   Agent: agents/bug-fix/subagent-2-plan.md
   Mode: read-only
   Input: investigation handoff
-  Output: fix handoff (approved fix, files to modify, callers verified, test contract)
+  Output: fix handoff with PLAN_READY_FOR_HUMAN_REVIEW (approved fix, files to modify, callers verified, test contract)
+  Gate: PLAN APPROVAL GATE — orchestrator stops for human approval before implementation
 
 Phase 3: IMPLEMENT AGENT
   Agent: agents/bug-fix/subagent-3-implement.md

@@ -42,6 +42,27 @@ The investigation handoff block from Step 1. If the handoff is missing root caus
 
 ---
 
+## Phase 0 — Similar Fix Check (MANDATORY FIRST)
+
+Before designing the fix, search the codebase for similar bug fixes. If you find them, your fix design MUST follow the same patterns (minimal change approach, test structure, isolation style).
+
+1. **Search:** Look for past fixes in the same area — same file, same component type, same failure mode.
+2. **Read:** Open the fix commits or the fixed code. How was the minimal change done? What tests were added?
+3. **Document:** Cite the exact files and patterns you will replicate.
+4. **Commit:** Your fix design must not deviate from these patterns. Consistency over novelty.
+
+```
+SIMILAR FIX FOUND:
+  Fix: [brief description]
+  Files: [exact paths]
+  Patterns to follow:
+    - [pattern]: [file] — [what to replicate]
+
+  If none found: "No similar fix found. Will use minimal-change pattern per Phase 4."
+```
+
+---
+
 ## Phase 1 — Re-Read and Verify the Root Cause
 
 Re-read the code yourself. Do not trust the handoff quotes alone.
@@ -148,7 +169,43 @@ WHY EXISTING TESTS MISSED THIS:
 
 ---
 
+## Phase 6 — Plan Readiness Checklist
+
+Before presenting to the human, verify. Do not use confidence percentages — use this checklist only:
+
+```
+PLAN READINESS CHECKLIST:
+[ ] Similar fix was searched; if found, plan follows its patterns
+[ ] Root cause re-read and verified in Phase 1
+[ ] Every caller of modified code has been read
+[ ] Regression surface mapped
+[ ] Fix is minimal and fully isolated (Phase 4)
+[ ] Reproduction test and regression tests defined
+[ ] No conflicts between investigation handoff and actual codebase
+```
+
+**If all checked:** Proceed to PLAN_READY_FOR_HUMAN_REVIEW. Present the plan.
+
+**If any unchecked:** Refinement loop. Maximum 2 iterations.
+
+---
+
+## Refinement Loop (Max 2 Iterations)
+
+If the checklist fails:
+
+1. **Identify** which items are unchecked and why.
+2. **Refine** — go back into the code. Read the missing callers or files. Fix the gaps.
+3. **Re-run** the checklist.
+4. **After 2 iterations** — present anyway. Set PLAN_READINESS_CHECKLIST: PRESENTED_AFTER_MAX_REFINEMENT and list items that remain unchecked.
+
+Do not loop more than 2 times. Present after that.
+
+---
+
 ## Handoff Block
+
+The orchestrator parses `PLAN_READY_FOR_HUMAN_REVIEW` and stops and stops for human approval before implementation. The human may approve, reject with feedback, or ask for more context.
 
 ```
 ╔══════════════════════════════════════════════════════════════════╗
@@ -157,6 +214,20 @@ WHY EXISTING TESTS MISSED THIS:
 
 ━━━ STATUS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 COMPLETED
+
+━━━ PLAN_READY_FOR_HUMAN_REVIEW ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Present for human approval in simple language:]
+
+SUMMARY: [2-3 sentences — what is broken, what the fix does]
+
+CHANGES BY FILE:
+  - [file path]: [what changes — one line]
+
+CONSISTENCY WITH SIMILAR FIXES: [Cite how this fix follows patterns from similar fixes, or "No similar fix found."]
+
+TECHNICAL DOUBTS FOR HUMAN: [Questions the agent cannot resolve. Simple language. Or "None."]
+
+PLAN_READINESS_CHECKLIST: PASSED | PRESENTED_AFTER_MAX_REFINEMENT
 
 ━━━ BUG SUMMARY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [Full bug description and reproduction steps — do not abbreviate]

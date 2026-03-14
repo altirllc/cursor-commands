@@ -1,19 +1,19 @@
-# Autonomous Multi-Agent Orchestrator
+# Multi-Agent Orchestrator
 
-A production-grade, fully autonomous multi-agent system for software development. Describe a task, answer clarity questions, walk away — receive a PR on GitHub.
+A production-grade orchestration system for software development. Describe a task, stay in control at key decision points, and get a PR on GitHub — with the agent handling execution while you own the plan and code.
 
 ---
 
 ## Philosophy
 
-**Zero human intervention between task submission and PR creation.**
+**Human owns vision and strategy. Agent executes.**
 
-- AI writes bad code when it guesses — these agents make guessing structurally impossible
-- Every claim must be backed by a file the agent actually read (anti-hallucination)
-- No code is written before requirements are fully understood
-- Existing working code is sacred — zero regression is always priority #1
-- Fresh context isolation: review agents never see implementation reasoning
-- Self-healing: failed reviews loop back automatically (max 5 iterations)
+- **You decide.** The orchestrator stops after clarity and after planning for your approval. No code is written until you approve the plan.
+- **You stay in control.** You can reject plans, provide feedback, and iterate until it fits your vision. The agent does not take full ownership of the codebase.
+- **Agent executes.** Once you approve, the orchestrator runs implementation, tests, and review loops. The orchestrator is best at execution—not at full ownership of the codebase.
+- **Guarded quality.** Every claim is backed by files the agent actually read (anti-hallucination). Existing working code is sacred—zero regression is priority #1.
+- **Structured handoffs.** The orchestrator gives you clear prompts and TASK_IDs so you can re-invoke easily—orchestration without writing long prompts from scratch.
+- **Confidence in production.** You retain ownership of the plan and code. The orchestrator excels at execution, not at fully owning the codebase. Changes going to production reflect your strategy and approval.
 
 ---
 
@@ -50,8 +50,9 @@ The orchestrator uses GitHub App tokens for git push and PR creation:
 ├── shared/
 │   └── principles.md            # Universal principles (all stacks)
 ├── scripts/
-│   ├── setup-github-remote.sh   # Phase 1: parse, mint token, set remote, write .github-setup.env
-│   ├── mint-github-token.sh     # Mints GitHub App installation token (loads .env.github)
+│   ├── setup-github-remote.sh       # Phase 1: parse, mint token, set remote, write .github-setup.env
+│   ├── ensure-orchestrator-gitignore.sh  # Ensures .orchestrator-state/ in .gitignore (orchestrator runs at start)
+│   ├── mint-github-token.sh         # Mints GitHub App installation token (loads .env.github)
 │   ├── github-get-token.sh      # Core token generation (called by mint-github-token.sh)
 │   └── github-create-pr.sh      # Creates PR via GitHub API
 ├── tools/

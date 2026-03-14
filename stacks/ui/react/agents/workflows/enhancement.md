@@ -11,28 +11,35 @@ Phase 1: CLARITY AGENT
   Gate: if reclassified as feature → switch to workflows/feature.md
         (all clarity work carries over — no duplication)
 
-Phase 2: IMPLEMENT AGENT
-  Agent: agents/enhancement/subagent-2-implement.md
-  Mode: write
+Phase 2: PLAN AGENT
+  Agent: agents/enhancement/subagent-2-enhancement-plan.md
+  Mode: read-only
   Input: clarity handoff
+  Output: plan handoff with PLAN_READY_FOR_HUMAN_REVIEW
+  Gate: PLAN APPROVAL GATE — orchestrator stops for human approval before implementation
+
+Phase 3: IMPLEMENT AGENT
+  Agent: agents/enhancement/subagent-3-implement.md
+  Mode: write
+  Input: plan handoff (implement block)
   Output: implementation report, committed code
   Guard: if > 4 files needed → SCOPE_ESCALATION, switch to feature workflow
 
-Phase 3: TEST EXECUTOR
+Phase 4: TEST EXECUTOR
   Agent: agents/test-executor/test-executor.md
   Mode: write (can fix test bugs)
   Input: implementation report + diff
   Output: test results + failure classification
   Gate: if FAIL_NEEDS_FIX → route to BLOCKER RESOLVER then re-test
 
-Phase 4: PR REVIEW AGENT
+Phase 5: PR REVIEW AGENT
   Agent: agents/pr-review/subagent-pr-review.md
   Mode: read-only (fresh context)
   Input: git diff + original task description ONLY
   Output: review verdict
   Gate: if BLOCKERS found → route to BLOCKER RESOLVER
 
-Phase 5: BLOCKER RESOLVER (if needed)
+Phase 6: BLOCKER RESOLVER (if needed)
   Agent: agents/blocker-resolver/blocker-resolver.md
   Mode: write (fresh context)
   Input: diff + blocker list + task description
@@ -40,20 +47,20 @@ Phase 5: BLOCKER RESOLVER (if needed)
   Then: loop back to Phase 3
   Loop limit: 5 total iterations
 
-Phase 6: TEST CHECKLIST AGENT
-  Agent: agents/enhancement/subagent-3-test-checklist.md
+Phase 7: TEST CHECKLIST AGENT
+  Agent: agents/enhancement/subagent-4-test-checklist.md
   Mode: read-only
   Input: task description + files modified
   Output: manual test checklist
 
-Phase 7: PR DESCRIPTION AGENT
+Phase 8: PR DESCRIPTION AGENT
   Agent: agents/pr-description/pr-description.md
   Mode: read-only
   Input: all handoffs + decision points + test results (includes Phase 6 handoff)
   Output: PR title + PR body
   Guardrail: SEQUENTIAL — must run after Phase 6 completes. Do NOT run in parallel.
 
-Phase 8: GIT OPERATIONS
+Phase 9: GIT OPERATIONS
   Mode: shell
   Actions:
     - git push origin {branch}
@@ -78,7 +85,7 @@ On reclassification:
 
 ## Key Differences from Feature Workflow
 
-1. **No planning step** — enhancements are small enough to go straight to code
+1. **Lighter planning step** — enhancement plan is smaller (no chunks, no PR split)
 2. **Scope guard** — implement agent stops if scope exceeds 4 files
 3. **Lighter clarity** — fewer sections than feature clarity
 4. **Always single PR** — enhancements are never split
